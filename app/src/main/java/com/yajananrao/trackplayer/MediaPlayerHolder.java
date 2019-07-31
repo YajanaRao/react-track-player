@@ -17,13 +17,15 @@
 package com.yajananrao.trackplayer;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
-import android.app.Service;
-import android.os.IBinder;
+import android.os.PowerManager;
+import android.util.Log;
 
+import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,15 +34,16 @@ import java.util.concurrent.TimeUnit;
  * Exposes the functionality of the {@link MediaPlayer} and implements the {@link PlayerAdapter}
  * so that {@link MainActivity} can control music playback.
  */
-public final class MediaPlayerHolder extends Service implements PlayerAdapter {
+public final class MediaPlayerHolder implements PlayerAdapter {
 
     public static final int PLAYBACK_POSITION_REFRESH_INTERVAL_MS = 1000;
+    private static final String TAG = "mediaPlayerHolder";
 
     private final Context mContext;
     private MediaPlayer mMediaPlayer;
-    private String resouce;
+    private HashMap metaData;
     private PlaybackInfoListener mPlaybackInfoListener;
-    private MediaPlayerService service;
+    private MediaPlayerService mService;
     private ScheduledExecutorService mExecutor;
     private Runnable mSeekbarPositionUpdateTask;
 
@@ -55,21 +58,28 @@ public final class MediaPlayerHolder extends Service implements PlayerAdapter {
      * object has to be created. That's why this method is private, and called by load(int) and
      * not the constructor.
      */
-    private void initializeMediaPlayer() {
+
+
+
+
+    public void initializeMediaPlayer() {
         if (mMediaPlayer == null) {
             mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setWakeMode(mContext.getApplicationContext(),
+                    PowerManager.PARTIAL_WAKE_LOCK);
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
                     stopUpdatingCallbackWithPosition(true);
-                    logToUI("MediaPlayer playback completed");
+                    Log.i(TAG, "onCompletion: ");
                     if (mPlaybackInfoListener != null) {
                         mPlaybackInfoListener.onStateChanged(PlaybackInfoListener.State.COMPLETED);
                         mPlaybackInfoListener.onPlaybackCompleted();
                     }
                 }
             });
-            logToUI("mMediaPlayer = new MediaPlayer()");
+            Log.i(TAG, "initializeMediaPlayer: ");
         }
     }
 
@@ -79,39 +89,37 @@ public final class MediaPlayerHolder extends Service implements PlayerAdapter {
 
     // Implements PlaybackControl.
     @Override
-    public void loadMedia(String resouce) {
+    public void loadMedia(String mSong) {
 
-        initializeMediaPlayer();
+        if(mSong != null){
+            try {
+                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mMediaPlayer.setDataSource(mSong);
+                Log.i(TAG, "loadMedia: load() {1. setDataSource} "+ mSong);
+            } catch (Exception e) {
+                Log.e(TAG, "loadMedia: "+e.toString());
+            }
 
-        try {
-            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mMediaPlayer.setDataSource(resouce);
-            logToUI("load() {1. setDataSource}"+ resouce);
-        } catch (Exception e) {
-            logToUI(e.toString());
+            try {
+                Log.i(TAG, "loadMedia: load() {2. prepare}");
+                mMediaPlayer.prepareAsync();
+            } catch (Exception e) {
+                Log.e(TAG, "loadMedia: "+e.toString());
+            }
+
+//            initializeProgressCallback();
         }
 
-        try {
-            logToUI("load() {2. prepare}");
-            mMediaPlayer.prepareAsync();
-        } catch (Exception e) {
-            logToUI(e.toString());
-        }
-
-        initializeProgressCallback();
-        logToUI("initializeProgressCallback()");
+//        initializeProgressCallback();
+//        Log.i(TAG, "loadMedia: initializeProgressCallback()");
     }
 
-    @Override
-    public IBinder onBind(Intent intent){
-        logToUI("Binded");
-        return null;
-    }
+
 
     @Override
     public void release() {
         if (mMediaPlayer != null) {
-            logToUI("release() and mMediaPlayer = null");
+            Log.i(TAG, "release: release() and mMediaPlayer = null");
             mMediaPlayer.release();
             mMediaPlayer = null;
         }
@@ -128,50 +136,50 @@ public final class MediaPlayerHolder extends Service implements PlayerAdapter {
     @Override
     public void play() {
         if (mMediaPlayer != null && !mMediaPlayer.isPlaying()) {
+            Log.i(TAG, "play: Attempt to play the song");
             mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mediaPlayer) {
-                    mMediaPlayer.start();
+                    Log.i(TAG, "onPrepared: Media player is prepared");
+                    mediaPlayer.start();
                 }
             });
-//            mMediaPlayer.start();
-            service.createNotification(mContext);
+            mMediaPlayer.start();
             if (mPlaybackInfoListener != null) {
                 mPlaybackInfoListener.onStateChanged(PlaybackInfoListener.State.PLAYING);
             }
-            startUpdatingCallbackWithPosition();
+//            startUpdatingCallbackWithPosition();
         }
-        logToUI("media not loaded");
     }
 
     @Override
     public void reset() {
         if (mMediaPlayer != null) {
-            logToUI("playbackReset()");
+            Log.i(TAG, "reset: playbackReset()");
             mMediaPlayer.reset();
-            loadMedia(resouce);
             if (mPlaybackInfoListener != null) {
                 mPlaybackInfoListener.onStateChanged(PlaybackInfoListener.State.RESET);
             }
-            stopUpdatingCallbackWithPosition(true);
+//            stopUpdatingCallbackWithPosition(true);
         }
     }
 
     @Override
     public void pause() {
         if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            Log.i(TAG, "pause: Attempt to pause song");
             mMediaPlayer.pause();
             if (mPlaybackInfoListener != null) {
                 mPlaybackInfoListener.onStateChanged(PlaybackInfoListener.State.PAUSED);
             }
-            logToUI("playbackPause()");
+            Log.i(TAG, "pause: playbackPause()");
         }
     }
 
     @Override
     public void seekTo(int position) {
         if (mMediaPlayer != null) {
-            logToUI(String.format("seekTo() %d ms", position));
+            Log.i(TAG, "seekTo: "+String.format("seekTo() %d ms", position));
             mMediaPlayer.seekTo(position);
         }
     }
@@ -226,15 +234,30 @@ public final class MediaPlayerHolder extends Service implements PlayerAdapter {
         if (mPlaybackInfoListener != null) {
             mPlaybackInfoListener.onDurationChanged(duration);
             mPlaybackInfoListener.onPositionChanged(0);
-            logToUI(String.format("firing setPlaybackDuration(%d sec)",
+            Log.i(TAG, "initializeProgressCallback: "+String.format("firing setPlaybackDuration(%d sec)",
                                   TimeUnit.MILLISECONDS.toSeconds(duration)));
-            logToUI("firing setPlaybackPosition(0)");
+            Log.i(TAG, "initializeProgressCallback: firing setPlaybackPosition(0)");
         }
     }
 
-    private void logToUI(String message) {
-        if (mPlaybackInfoListener != null) {
-            mPlaybackInfoListener.onLogUpdated(message);
+
+    public HashMap<String, Object> extractMetaData(String resource){
+        metaData = new HashMap<String,Object>();
+        try{
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(resource,new HashMap<String, String>());
+            metaData.put("title",mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE));
+            metaData.put("albumArtist",mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST) );
+            byte[] imageData = mmr.getEmbeddedPicture();
+            Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+            metaData.put("artcover",bitmap);
+
+
+            return metaData;
+        }
+        catch (Exception exp){
+            Log.e(TAG, "extractMetaData: "+ exp.toString());
+            return metaData;
         }
     }
 
