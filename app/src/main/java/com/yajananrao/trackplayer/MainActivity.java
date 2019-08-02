@@ -1,15 +1,19 @@
 package com.yajananrao.trackplayer;
 
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.support.v7.app.AppCompatActivity;
+import android.os.RemoteException;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.SeekBar;
 
-import com.yajananrao.trackplayer.MediaPlayerService.MusicBinder;
+import androidx.appcompat.app.AppCompatActivity;
 
 
 // Extends activity and support to action bar
@@ -17,79 +21,166 @@ import com.yajananrao.trackplayer.MediaPlayerService.MusicBinder;
 
 public final class MainActivity extends AppCompatActivity {
 
-    public static final String TAG = "MainActivity";
     public static final String MEDIA_RES = "https://dl.dropboxusercontent.com/s/l36tpowqqlg9ync/03.%20Justin%20Bieber%20-%20Love%20Yourself%28128%29.mp3?dl=0";
 
+    private static final int STATE_PAUSED = 0;
+    private static final int STATE_PLAYING = 1;
+    private static final String TAG = "MainActivity";
 
-    private MediaPlayerService mService;
-    private Intent playIntent;
-    private boolean mMusicBound=false;
+    private int mCurrentState;
 
-    //connect to the service
-    private ServiceConnection musicConnection = new ServiceConnection(){
+    private MediaBrowserCompat mMediaBrowserCompat;
+    private MediaControllerCompat mMediaControllerCompat;
 
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicBinder binder = (MusicBinder)service;
-            //get service
-            mService = binder.getService();
-            //pass song
-            Log.i(TAG, "onServiceConnected: Service connected");
-            mService.setSong(MEDIA_RES);
-            mMusicBound = true;
-        }
+    private Button mPlayPauseToggleButton;
+    private SeekBar mSeekbarAudio;
+
+    private boolean mUserIsSeeking = false;
+
+    private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
         @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mMusicBound = false;
+        public void onConnected() {
+            super.onConnected();
+            try {
+                mMediaControllerCompat = new MediaControllerCompat(MainActivity.this, mMediaBrowserCompat.getSessionToken());
+                mMediaControllerCompat.registerCallback(mMediaControllerCompatCallback);
+                MediaControllerCompat.setMediaController(MainActivity.this,mMediaControllerCompat);
+                Uri uri = Uri.parse(MEDIA_RES);
+                MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls().playFromUri(uri, null);
+                buildTransportControls();
+            } catch( RemoteException e ) {
+
+            }
         }
     };
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
+    private MediaControllerCompat.Callback mMediaControllerCompatCallback = new MediaControllerCompat.Callback() {
 
-        //Handle intent here...
-        // Get the Intent that started this activity and extract the string
+        @Override
+        public void onPlaybackStateChanged(PlaybackStateCompat state) {
+            super.onPlaybackStateChanged(state);
+            if( state == null ) {
+                return;
+            }
 
-        String toggle = intent.getStringExtra(MediaPlayerService.MEDIA_TOGGLE);
-        String next = intent.getStringExtra(MediaPlayerService.MEDIA_NEXT);
-        String previous = intent.getStringExtra(MediaPlayerService.MEDIA_PREVIOUS);
-        if(toggle != null){
-            Log.i(TAG, "onNewIntent: pause song");
-            mService.toggle();
-        }else if(previous != null){
-            Log.i(TAG, "onNewIntent: Prevoius song");
-        }else if(next != null){
-            Log.i(TAG, "onNewIntent: Next song");
+            switch( state.getState() ) {
+                case PlaybackStateCompat.STATE_PLAYING: {
+                    Log.i(TAG, "onPlaybackStateChanged: Playing");
+                    mCurrentState = STATE_PLAYING;
+                    break;
+                }
+                case PlaybackStateCompat.STATE_PAUSED: {
+                    Log.i(TAG, "onPlaybackStateChanged: Paused");
+                    mCurrentState = STATE_PAUSED;
+                    break;
+                }
+                case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT: {
+                    Log.i(TAG, "onPlaybackStateChanged: Skip to next");
+                    break;
+                }
+                case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS: {
+                    Log.i(TAG, "onPlaybackStateChanged: Skip to previous");
+                    break;
+                }
+                default:{
+                    Log.i(TAG, "onPlaybackStateChanged: "+ state.getState());
+                    break;
+                }
+            }
         }
-        mService.updateNotification();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if(playIntent==null){
-//            Starting the MediaPlayerService class execution
-            Log.i(TAG, "onStart: Creating the service");
-            playIntent = new Intent(this, MediaPlayerService.class);
-            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-            startService(playIntent);
-            Log.i(TAG, "onStart: Service started");
-        }
-    }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mMediaBrowserCompat = new MediaBrowserCompat(this, new ComponentName(this, MediaPlayerService.class),
+                mMediaBrowserCompatConnectionCallback, getIntent().getExtras());
+
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mMediaBrowserCompat.connect();
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        // (see "stay in sync with the MediaSession")
+        if (MediaControllerCompat.getMediaController(this) != null) {
+            MediaControllerCompat.getMediaController(this).unregisterCallback(mMediaControllerCompatCallback);
+        }
+        mMediaBrowserCompat.disconnect();
+
+    }
+
+
+    @Override
     protected void onDestroy() {
-        stopService(playIntent);
-        mService=null;
         super.onDestroy();
-        Log.i(TAG, "onDestroy: Cleared service");
+        if( MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
+            MediaControllerCompat.getMediaController(this).getTransportControls().pause();
+        }
+
+        mMediaBrowserCompat.disconnect();
+    }
+
+    void buildTransportControls(){
+        mPlayPauseToggleButton = (Button) findViewById(R.id.button);
+
+        mSeekbarAudio = (SeekBar) findViewById(R.id.progress);
+
+        mPlayPauseToggleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if( mCurrentState == STATE_PAUSED ) {
+                    try {
+                        MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls().play();
+                        mCurrentState = STATE_PLAYING;
+                    }catch (Exception exp){
+                        Log.e(TAG, "onClick: "+exp.toString() );
+                    }
+                } else {
+                    try {
+                        if( MediaControllerCompat.getMediaController(MainActivity.this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
+                            MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls().pause();
+                        }
+                    }catch (Exception exp){
+                        Log.e(TAG, "onClick: "+exp.toString() );
+                    }
+
+
+                    mCurrentState = STATE_PAUSED;
+                }
+            }
+        });
+
+        mSeekbarAudio.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+                    int userSelectedPosition = 0;
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                        mUserIsSeeking = true;
+                    }
+
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        if (fromUser) {
+                            userSelectedPosition = progress;
+                        }
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                        mUserIsSeeking = false;
+                        MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls().seekTo(userSelectedPosition);
+                    }
+                });
     }
 }
