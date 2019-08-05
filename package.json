@@ -1,0 +1,33 @@
+{
+  "name": "react-native-audio",
+  "version": "1.2.0",
+  "description": "A fully fledged audio module created for music apps",
+  "contributors": [
+    {
+      "name": "Yajana N Rao",
+      "email": "yajananrao@gmail.com",
+      "url": "http://yajana.herokuapp.com"
+    }
+  ],
+  "keywords": [
+    "react",
+    "react-native",
+    "track-player",
+    "audio-player",
+    "audio",
+    "player",
+    "music",
+    "controls",
+    "chromecast",
+    "android",
+    "hooks"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YajanaRao/react-native-audio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YajanaRao/react-native-audio/issues"
+  }
+}
