@@ -1,4 +1,4 @@
-package com.yajananrao.trackplayer;
+package com.reactnativeaudiodemo;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -24,9 +24,9 @@ import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.os.RemoteException;
 import android.text.TextUtils;
-import android.util.Log;
-
+import android.support.v4.media.session.PlaybackStateCompat;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -34,9 +34,13 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.media.MediaBrowserServiceCompat;
 import androidx.media.session.MediaButtonReceiver;
 
+import android.widget.Toast;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+
+import android.util.Log;
 
 public class MediaPlayerService extends MediaBrowserServiceCompat  implements MediaPlayer.OnCompletionListener, AudioManager.OnAudioFocusChangeListener{
 
@@ -114,13 +118,12 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
         @Override
         public void onPlayFromSearch(String query, Bundle extras) {
             super.onPlayFromSearch(query, extras);
-            Log.i(TAG, "onPlayFromSearch: Google asistant");
         }
 
         @Override
         public void onPlayFromUri(Uri uri, Bundle extras) {
             super.onPlayFromUri(uri, extras);
-
+            Log.i(TAG, "onPlayFromUri: song received");
             try {
 
 
@@ -150,24 +153,14 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
         public void onSkipToNext() {
             super.onSkipToNext();
             setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT);
-            Log.d(TAG, "STATE_SKIPPING_TO_NEXT");
         }
 
         @Override
         public void onSkipToPrevious() {
             super.onSkipToPrevious();
             setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS);
-            Log.d(TAG, "STATE_SKIPPING_TO_PREVIOUS");
         }
 
-        @Override
-        public void onCommand(String command, Bundle extras, ResultReceiver cb) {
-            super.onCommand(command, extras, cb);
-            if( COMMAND_EXAMPLE.equalsIgnoreCase(command) ) {
-                //Custom command here
-                Log.i(TAG, "onCommand: Custom command");
-            }
-        }
 
         @Override
         public void onSeekTo(long pos) {
@@ -180,19 +173,21 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
 
     @Override
     public void onCreate(){
-        super.onCreate();
-        initMediaPlayer();
-        initMediaSession();
-        initNotification();
-        Log.i(TAG, "onCreate: Initialised music player");
+        try {
+            super.onCreate();
+            initMediaPlayer();
+            initMediaSession();
+            initNotification();
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "onCreate: "+ e.toString());
+        }
     }
 
     private void initNotification() {
 
-        Log.i(TAG, "initNotification: Notification channel");
         mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.i(TAG, "Init notification: In Oreo");
             NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,
                     CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
             notificationChannel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
@@ -230,7 +225,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
         try {
             NotificationCompat.Builder builder = MediaStyleHelper.from(this, mMediaSessionCompat);
             if( builder == null ) {
-                Log.i(TAG, "showPlayingNotification: Null builder");
                 return;
             }
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous, "Previous", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
@@ -241,9 +235,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
             builder.setChannelId(CHANNEL_ID);
             mNotificationManagerCompat = NotificationManagerCompat.from(this);
             startForeground(NOTIFICATION_ID, builder.build());
-            Log.i(TAG, "showPlayingNotification: Notify");
         }catch (Exception exp){
-            Log.e(TAG, "showPlayingNotification: "+ exp.toString() );
         }
     }
 
@@ -262,9 +254,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
             mNotificationManagerCompat.notify(NOTIFICATION_ID,builder.build());
 //            startForeground(NOTIFICATION_ID, builder.build());
             stopForeground(false);
-            Log.i(TAG, "showPausedNotification: ");
         }catch (Exception exp){
-            Log.e(TAG, "showPausedNotification: "+ exp.toString() );
         }
     }
 
@@ -315,7 +305,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
         metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, 1);
         mMediaSessionCompat.setMetadata(metadataBuilder.build());
         mMediaSessionCompat.setSessionActivity(appPendingIntent);
-        Log.i(TAG, "initMediaSessionMetadata: Metadata is set");
     }
 
     private boolean successfullyRetrievedAudioFocus() {
@@ -399,7 +388,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
         if( mMediaPlayer != null ) {
-            Log.i(TAG, "onCompletion: Song compleate");
             mMediaPlayer.release();
         }
     }
