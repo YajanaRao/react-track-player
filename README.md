@@ -1,4 +1,4 @@
-# react-native-audio
+# react-native-audio ` BETA `
 Android audio streaming Module for React native
 
 ## Install
@@ -31,5 +31,3 @@ pause = () => {
 }
 
 ```
-
-# ` BETA `
