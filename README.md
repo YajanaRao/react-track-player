@@ -1,4 +1,4 @@
-# react-native-audio ` BETA `
+# react-native-audio 
 Android audio streaming Module for React native
 
 ## Install
