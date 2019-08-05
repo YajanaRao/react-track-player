@@ -14,16 +14,43 @@ buildscript {
     }
 }
 
-allprojects {
-    repositories {
-        google()
-        jcenter()
-        
-    }
+def getExtOrDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['ReactNativeAudio_' + name]
 }
 
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['ReactNativeAudio_' + name]).toInteger()
+}
+
+apply plugin: 'com.android.library'
+
+android {
+  compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
+  buildToolsVersion getExtOrDefault('buildToolsVersion')
+
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault('minSdkVersion')
+    targetSdkVersion getExtOrIntegerDefault('targetSdkVersion')
+  }
+  lintOptions{
+    abortOnError false
+  }
+}
+
+repositories {
+    maven {
+        // As RN is not updated in jcenter anymore, we'll have to grab it from npm
+        // Make sure you have installed the react-native npm package before compiling
+        url "../node_modules/react-native/android"
+    }
+
+    jcenter()
+    google()
+    mavenCentral()
+}
+
+
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation 'com.android.support:support-media-compat:28.+'
 }
