@@ -1,4 +1,4 @@
-package com.reactnativeaudiodemo;
+package com.yajananrao.trackplayer;
 
 import android.widget.Toast;
 
