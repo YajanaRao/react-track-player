@@ -1,4 +1,4 @@
-package com.reactnativeaudiodemo;
+package com.yajananrao.trackplayer;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
