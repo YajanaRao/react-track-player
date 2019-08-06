@@ -1,4 +1,4 @@
-package com.reactnativeaudiodemo;
+package com.yajananrao.trackplayer;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
