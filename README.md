@@ -1,6 +1,11 @@
 # react-native-audio 
 Android audio streaming Module for React native
 
+## Features
+- [x] Background play
+- [x] Notification 
+- [x] Support for online streaming and offline files
+
 ## Install
 
 ### Using npm
