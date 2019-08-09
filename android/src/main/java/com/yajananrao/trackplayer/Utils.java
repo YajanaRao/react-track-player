@@ -14,18 +14,33 @@ public class Utils {
         HashMap<String,Object> metaData = new HashMap<String,Object>();
         try{
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            mmr.setDataSource(resource,new HashMap<String, String>());
-            metaData.put("title",mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE));
-            metaData.put("albumArtist",mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST) );
+            try {
+                mmr.setDataSource(resource, new HashMap<String, String>());
+            } catch (Exception e) {
+                //TODO: handle exception
+                Log.e(TAG, "extractMetaData: Try 1"+ resource);
+                mmr.setDataSource(resource);
+            }
+            String title = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            if(title.isEmpty() || title == null){
+                title = "Track";
+            }
+            metaData.put("title",title);
+            String albumArtist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST);         
+            if(albumArtist == null || albumArtist.isEmpty()){
+                albumArtist = "Unknown Artist";
+            }
+            metaData.put("albumArtist", albumArtist);
             byte[] imageData = mmr.getEmbeddedPicture();
-            Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
-            metaData.put("artcover",bitmap);
-
+            if(imageData != null){
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+                metaData.put("artcover", bitmap);
+            }
 
             return metaData;
         }
         catch (Exception exp){
-            Log.e(TAG, "extractMetaData: "+ exp.toString());
+            Log.e(TAG, "extractMetaData: Try 2"+ exp.toString());
             return metaData;
         }
     }
