@@ -80,9 +80,20 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void destroy(){
+        try {
+            mMediaBrowserCompat.disconnect();
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "destroy"+ e.toString());
+        }
+    }
+
     @Override
     public void initialize() {
         try {
+            Log.i(TAG, "initialize: destroy");
             ReactContext context = getReactApplicationContext();
             mActivity = getCurrentActivity();
             Intent intent = mActivity.getIntent();
@@ -93,6 +104,19 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         } catch (Exception e) {
             //TODO: handle exception
             Log.e(TAG, "initialize: "+ e.toString());
+        }
+    }
+
+    @Override
+    public void onCatalystInstanceDestroy() {
+        try {
+            Log.i(TAG, "onCatalystInstanceDestroy: destroy");
+            if(mMediaBrowserCompat != null){
+                mMediaBrowserCompat.disconnect();
+            }
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "onCatalystInstanceDestroy: " + e.toString());
         }
     }
 
