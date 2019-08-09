@@ -8,13 +8,15 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.net.Uri;
 import android.content.Intent;
 import android.app.Activity;
+import android.content.ComponentName;
+
+
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import android.content.ComponentName;
-
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import java.util.Map;
 
 import java.util.HashMap;
@@ -46,12 +48,15 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void load(String url) {
         try {
-            Toast.makeText(getReactApplicationContext(), url, Toast.LENGTH_LONG).show();
-            Uri uri = Uri.parse(url);
-            MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(uri, null);
+            if(!url.isEmpty()){
+                Uri uri = Uri.parse(url);
+                MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(uri, null);
+            }
+          
         } catch (Exception e) {
             //TODO: handle exception
-            Toast.makeText(getReactApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+            // Toast.makeText(getReactApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Load: "+ e.toString());
         }
     }
 
@@ -103,7 +108,8 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 mMediaControllerCompat.registerCallback(mMediaControllerCompatCallback);
                 MediaControllerCompat.setMediaController(mActivity, mMediaControllerCompat);
             } catch (RemoteException e) {
-                Toast.makeText(getReactApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                // Toast.makeText(getReactApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                Log.e(TAG, "onConnected: "+ e.toString());
             }
         }
     };
@@ -116,20 +122,24 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             if (state == null) {
                 return;
             }
-
+            ReactContext context = getReactApplicationContext();
             switch (state.getState()) {
             case PlaybackStateCompat.STATE_PLAYING: {
                 mCurrentState = STATE_PLAYING;
+                sendEvent(context, "media", "playing");
                 break;
             }
             case PlaybackStateCompat.STATE_PAUSED: {
                 mCurrentState = STATE_PAUSED;
+                sendEvent(context, "media", "paused");
                 break;
             }
             case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT: {
+                sendEvent(context, "media", "skip_to_next");
                 break;
             }
             case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS: {
+                sendEvent(context, "media", "skip_to_previous");
                 break;
             }
             default: {
@@ -138,5 +148,9 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             }
         }
     };
+
+    private void sendEvent(ReactContext reactContext, String eventName, String params) {
+        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, params);
+    }
 
 }
