@@ -204,12 +204,19 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        audioManager.abandonAudioFocus(this);
-        unregisterReceiver(mNoisyReceiver);
-        mMediaSessionCompat.release();
-        clearNotification();
+        try {
+            super.onDestroy();
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            audioManager.abandonAudioFocus(this);
+            unregisterReceiver(mNoisyReceiver);
+            if(mMediaSessionCompat != null){
+                mMediaSessionCompat.release();
+            }
+            clearNotification();
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "onDestroy"+ e.toString());
+        }
     }
 
     private void clearNotification() {
