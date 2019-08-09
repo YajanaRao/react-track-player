@@ -126,25 +126,19 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
             Log.i(TAG, "onPlayFromUri: song received");
             try {
 
-
                 try {
                     mMediaPlayer.setDataSource(uri.toString());
-
+                    // clearNotification();
                 } catch( IllegalStateException e ) {
                     mMediaPlayer.release();
                     initMediaPlayer();
                     mMediaPlayer.setDataSource(uri.toString());
                 }
-
                 initMediaSessionMetadata(uri.toString());
-
+                mMediaPlayer.prepare();
             } catch (IOException e) {
                 return;
             }
-
-            try {
-                mMediaPlayer.prepare();
-            } catch (IOException e) {}
 
             //Work with extras here if you want
         }
@@ -185,16 +179,20 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
     }
 
     private void initNotification() {
-
-        mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,
-                    CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
-            notificationChannel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-            notificationChannel.setShowBadge(true);
-            notificationChannel.setSound(null,null);
-            notificationChannel.enableVibration(false);
-            mNotificationManager.createNotificationChannel(notificationChannel);
+        try {
+            mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME,
+                        NotificationManager.IMPORTANCE_LOW);
+                notificationChannel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+                notificationChannel.setShowBadge(true);
+                notificationChannel.setSound(null, null);
+                notificationChannel.enableVibration(false);
+                mNotificationManager.createNotificationChannel(notificationChannel);
+            }
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "initNotification"+ e.toString());
         }
     }
 
@@ -211,7 +209,19 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
         audioManager.abandonAudioFocus(this);
         unregisterReceiver(mNoisyReceiver);
         mMediaSessionCompat.release();
-        NotificationManagerCompat.from(this).cancel(1);
+        clearNotification();
+    }
+
+    private void clearNotification() {
+        try {
+            NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID);
+            mNotificationManager.cancel(NOTIFICATION_ID);
+            mNotificationManager.cancelAll();
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "clearNotification"+ e.toString());
+        }
+
     }
 
     private void initMediaPlayer() {
@@ -295,7 +305,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
         //Notification icon in card
         metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
-        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
+        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, (Bitmap) metaData.get("artcover"));
 
         //lock screen icon for pre lollipop
         metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, (Bitmap) metaData.get("artcover"));
@@ -326,9 +336,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
             result = audioManager.requestAudioFocus(this,
                     AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
         }
-
-
-
 
         return result == AudioManager.AUDIOFOCUS_GAIN;
     }
