@@ -1,7 +1,5 @@
 package com.yajananrao.trackplayer;
 
-import android.widget.Toast;
-
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -55,7 +53,6 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
           
         } catch (Exception e) {
             //TODO: handle exception
-            // Toast.makeText(getReactApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
             Log.e(TAG, "Load: "+ e.toString());
         }
     }
@@ -132,7 +129,6 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 mMediaControllerCompat.registerCallback(mMediaControllerCompatCallback);
                 MediaControllerCompat.setMediaController(mActivity, mMediaControllerCompat);
             } catch (RemoteException e) {
-                // Toast.makeText(getReactApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                 Log.e(TAG, "onConnected: "+ e.toString());
             }
         }
