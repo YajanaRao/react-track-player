@@ -34,8 +34,6 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.media.MediaBrowserServiceCompat;
 import androidx.media.session.MediaButtonReceiver;
 
-import android.widget.Toast;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -125,18 +123,24 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
             super.onPlayFromUri(uri, extras);
             Log.i(TAG, "onPlayFromUri: song received");
             try {
-
+                // FIXME: Not able to clear notification from header
                 try {
                     mMediaPlayer.setDataSource(uri.toString());
-                    // clearNotification();
                 } catch( IllegalStateException e ) {
-                    mMediaPlayer.release();
+                    Log.e(TAG, "onPlayFromUri: " + e.toString());
+                    if (mMediaPlayer != null) {
+                        mMediaPlayer.stop();
+                        mMediaPlayer.reset();
+                        mMediaPlayer.release();
+                    }
                     initMediaPlayer();
                     mMediaPlayer.setDataSource(uri.toString());
+                    showPausedNotification();
                 }
                 initMediaSessionMetadata(uri.toString());
                 mMediaPlayer.prepare();
             } catch (IOException e) {
+                Log.e(TAG, "onPlayFromUri: "+e.toString());
                 return;
             }
 
@@ -221,9 +225,11 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
 
     private void clearNotification() {
         try {
-            NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID);
+            // NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID);
+            
             mNotificationManager.cancel(NOTIFICATION_ID);
             mNotificationManager.cancelAll();
+            Log.i(TAG, "clearNotification");
         } catch (Exception e) {
             //TODO: handle exception
             Log.e(TAG, "clearNotification"+ e.toString());
@@ -294,9 +300,11 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
     private void setMediaPlaybackState(int state) {
         PlaybackStateCompat.Builder playbackstateBuilder = new PlaybackStateCompat.Builder();
         if( state == PlaybackStateCompat.STATE_PLAYING ) {
-            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE);
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE 
+                    | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
         } else {
-            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY);
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY 
+                    | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
         }
         playbackstateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
         mMediaSessionCompat.setPlaybackState(playbackstateBuilder.build());
