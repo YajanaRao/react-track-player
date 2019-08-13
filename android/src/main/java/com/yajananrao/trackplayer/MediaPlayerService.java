@@ -74,11 +74,18 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
                 return;
             }
 
-            mMediaSessionCompat.setActive(true);
-            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
-            initNoisyReceiver();
-            showPlayingNotification();
-            mMediaPlayer.start();
+            try {
+                mMediaSessionCompat.setActive(true);
+                setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+                initNoisyReceiver();
+                showPlayingNotification();
+                mMediaPlayer.start();
+            } catch (Exception e) {
+                //TODO: handle exception
+                Log.e(TAG, "onPlay: "+ e.toString());
+                mMediaPlayer.prepareAsync();
+                mMediaPlayer.start();
+            }
         }
 
         @Override
@@ -138,7 +145,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
                     showPausedNotification();
                 }
                 initMediaSessionMetadata(uri.toString());
-                mMediaPlayer.prepare();
+                mMediaPlayer.prepareAsync();
             } catch (IOException e) {
                 Log.e(TAG, "onPlayFromUri: "+e.toString());
                 return;
@@ -253,8 +260,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous, "Previous", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_pause, "Pause", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_next, "Next", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
-
-            builder.setSmallIcon(R.drawable.ic_play_circle);
             builder.setChannelId(CHANNEL_ID);
             mNotificationManagerCompat = NotificationManagerCompat.from(this);
             startForeground(NOTIFICATION_ID, builder.build());
@@ -271,7 +276,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous, "Previous", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_play, "Play", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_next, "Next", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
-            builder.setSmallIcon(R.drawable.ic_play_circle);
             builder.setChannelId(CHANNEL_ID);
             mNotificationManagerCompat = NotificationManagerCompat.from(this);
             mNotificationManagerCompat.notify(NOTIFICATION_ID,builder.build());
@@ -361,7 +365,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
     @Override
     public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
         if(TextUtils.equals(clientPackageName, getPackageName())) {
-            return new BrowserRoot(getString(R.string.app_name), null);
+            return new BrowserRoot("RNAudio", null);
         }
         return null;
     }
