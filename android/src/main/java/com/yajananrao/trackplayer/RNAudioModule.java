@@ -15,8 +15,8 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import java.util.Map;
 
+import java.util.Map;
 import java.util.HashMap;
 
 import android.os.RemoteException;
