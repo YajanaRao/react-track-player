@@ -41,6 +41,7 @@ public class MediaStyleHelper {
                         .setContentText(description.getSubtitle())
                         .setLargeIcon(description.getIconBitmap())
                         .setContentIntent(controller.getSessionActivity())
+                        .setSmallIcon(R.drawable.ic_music_note)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setDeleteIntent(
                                 MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP))
