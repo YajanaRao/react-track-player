@@ -1,23 +1,18 @@
-package com.reactnativeaudiodemo;
+package com.yajananrao.trackplayer;
 
-import android.widget.Toast;
 
-import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.net.Uri;
 import android.content.Intent;
 import android.app.Activity;
-import com.facebook.react.bridge.NativeModule;
+import android.content.ComponentName;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.session.MediaControllerCompat;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import android.content.ComponentName;
-
-import java.util.Map;
-
-import java.util.HashMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import android.os.RemoteException;
 import android.util.Log;
@@ -26,69 +21,43 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
 
     private static final int STATE_PAUSED = 0;
     private static final int STATE_PLAYING = 1;
-    private static final String TAG = "MainActivity";
 
     private int mCurrentState;
 
     private MediaBrowserCompat mMediaBrowserCompat;
     private MediaControllerCompat mMediaControllerCompat;
     private Activity mActivity;
+    private ReactContext mContext;
+    private MediaPlayerService mService;
+
+    private boolean connecting = false;
+    private String path;
+    private static final String TAG = "RNAudioModule";
 
     @Override
     public String getName() {
-        return "Audio";
+        return "RNAudio";
     }
 
     public RNAudioModule(ReactApplicationContext reactContext) {
         super(reactContext);
     }
 
-    @ReactMethod
-    public void load(String url) {
-        try {
-            Toast.makeText(getReactApplicationContext(), url, Toast.LENGTH_LONG).show();
-            Uri uri = Uri.parse(url);
-            MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(uri, null);
-        } catch (Exception e) {
-            //TODO: handle exception
-            Toast.makeText(getReactApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @ReactMethod
-    public void play() {
-        try {
-            MediaControllerCompat.getMediaController(mActivity).getTransportControls().play();
-        } catch (Exception e) {
-            //TODO: handle exception
-            Log.e(TAG, "Play: "+ e.toString());
-        }
-    }
-
-    @ReactMethod
-    public void pause() {
-        try {
-            MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
-        } catch (Exception e) {
-            // TODO: handle exception
-            Log.e(TAG, "Pause: " + e.toString());
-        }
-    }
-
     @Override
     public void initialize() {
-        try {
-            ReactContext context = getReactApplicationContext();
-            mActivity = getCurrentActivity();
-            Intent intent = mActivity.getIntent();
-            mMediaBrowserCompat = new MediaBrowserCompat(mActivity,
-                    new ComponentName(mActivity, MediaPlayerService.class), mMediaBrowserCompatConnectionCallback,
-                    intent.getExtras());
-            mMediaBrowserCompat.connect();
-        } catch (Exception e) {
-            //TODO: handle exception
-            Log.e(TAG, "initialize: "+ e.toString());
-        }
+        mContext = getReactApplicationContext();
+        mActivity = getCurrentActivity();
+        Intent intent = mActivity.getIntent();
+        mMediaBrowserCompat = new MediaBrowserCompat(mActivity, new ComponentName(mActivity, MediaPlayerService.class),
+                mMediaBrowserCompatConnectionCallback, intent.getExtras());
+        mMediaBrowserCompat.connect();
+        mService = new MediaPlayerService();
+    }
+
+
+    @Override
+    public void onCatalystInstanceDestroy() {
+        mContext = getReactApplicationContext();
     }
 
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
@@ -96,14 +65,12 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         @Override
         public void onConnected() {
             super.onConnected();
-            Log.i(TAG, "onConnected: connected");
             try {
-                mMediaControllerCompat = new MediaControllerCompat(mActivity,
-                        mMediaBrowserCompat.getSessionToken());
+                mMediaControllerCompat = new MediaControllerCompat(mActivity, mMediaBrowserCompat.getSessionToken());
                 mMediaControllerCompat.registerCallback(mMediaControllerCompatCallback);
                 MediaControllerCompat.setMediaController(mActivity, mMediaControllerCompat);
             } catch (RemoteException e) {
-                Toast.makeText(getReactApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                Log.e(TAG, "onConnected: " + e.toString());
             }
         }
     };
@@ -116,20 +83,23 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             if (state == null) {
                 return;
             }
-
             switch (state.getState()) {
             case PlaybackStateCompat.STATE_PLAYING: {
                 mCurrentState = STATE_PLAYING;
+                sendEvent(mContext, "media", "playing");
                 break;
             }
             case PlaybackStateCompat.STATE_PAUSED: {
                 mCurrentState = STATE_PAUSED;
+                sendEvent(mContext, "media", "paused");
                 break;
             }
             case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT: {
+                sendEvent(mContext, "media", "skip_to_next");
                 break;
             }
             case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS: {
+                sendEvent(mContext, "media", "skip_to_previous");
                 break;
             }
             default: {
@@ -138,5 +108,83 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             }
         }
     };
+
+    private void sendEvent(ReactContext reactContext, String eventName, String params) {
+        try {
+            reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, params);
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.i(TAG, "sendEvent: "+e.toString());
+        }
+       
+    }
+
+    private void waitForConnection(Runnable r) {
+        Log.i(TAG, "waitForConnection: got runnable");
+        if (mService != null) {
+            Log.i(TAG, "waitForConnection: posting");
+            mService.post(r);
+            return;
+        }
+
+        if (connecting){
+            return;
+        }
+        Log.i(TAG, "waitForConnection: creating context");
+       
+    }
+
+    @ReactMethod
+    public void load(String url) {
+        path = url;
+        Runnable r = new Runnable(){
+        
+            @Override
+            public void run() {
+                if (!path.isEmpty()) {
+                    Uri uri = Uri.parse(path);
+                    MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(uri, null);
+                }
+
+            }
+        };
+        waitForConnection(r);
+    }
+
+    @ReactMethod
+    public void play() {
+        Runnable r = new Runnable(){
+        
+            @Override
+            public void run() {
+                MediaControllerCompat.getMediaController(mActivity).getTransportControls().play();
+            }
+        };
+        waitForConnection(r);
+    }
+
+    @ReactMethod
+    public void pause() {
+        Runnable r = new Runnable(){
+        
+            @Override
+            public void run() {
+                MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
+            }
+        };
+       waitForConnection(r);
+    }
+
+    @ReactMethod
+    public void destroy() {
+        Runnable r = new Runnable(){
+        
+            @Override
+            public void run() {
+                mMediaBrowserCompat.disconnect();
+            }
+        };
+        waitForConnection(r);
+    }
 
 }

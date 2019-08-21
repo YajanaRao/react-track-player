@@ -1,4 +1,4 @@
-package com.reactnativeaudiodemo;
+package com.yajananrao.trackplayer;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,13 +18,12 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
-import android.os.ResultReceiver;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.os.RemoteException;
 import android.text.TextUtils;
 import android.support.v4.media.session.PlaybackStateCompat;
 import androidx.annotation.NonNull;
@@ -34,8 +33,6 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.media.MediaBrowserServiceCompat;
 import androidx.media.session.MediaButtonReceiver;
 
-import android.widget.Toast;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -44,9 +41,7 @@ import android.util.Log;
 
 public class MediaPlayerService extends MediaBrowserServiceCompat  implements MediaPlayer.OnCompletionListener, AudioManager.OnAudioFocusChangeListener{
 
-    public static final String COMMAND_EXAMPLE = "command_example";
-
-    private static final String TAG = "MyApp";
+    private static final String TAG = "MediaPlayerService";
     private static final int NOTIFICATION_ID = 101;
     public static final String CHANNEL_ID = "com_yajananrao_trackplayer";
     private static final String CHANNEL_NAME = "Track Player";
@@ -56,6 +51,14 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
     private MediaPlayer mMediaPlayer;
     private MediaSessionCompat mMediaSessionCompat;
     private AudioFocusRequest focus;
+
+
+    public Handler handler;
+
+    public void post(Runnable r) {
+        handler = new Handler();
+        handler.post(r);
+    }
 
 
     private BroadcastReceiver mNoisyReceiver = new BroadcastReceiver() {
@@ -76,11 +79,18 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
                 return;
             }
 
-            mMediaSessionCompat.setActive(true);
-            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
-            initNoisyReceiver();
-            showPlayingNotification();
-            mMediaPlayer.start();
+            try {
+                mMediaSessionCompat.setActive(true);
+                setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+                initNoisyReceiver();
+                showPlayingNotification();
+                mMediaPlayer.start();
+            } catch (Exception e) {
+                //TODO: handle exception
+                Log.e(TAG, "onPlay: "+ e.toString());
+                mMediaPlayer.prepareAsync();
+                mMediaPlayer.start();
+            }
         }
 
         @Override
@@ -125,26 +135,26 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
             super.onPlayFromUri(uri, extras);
             Log.i(TAG, "onPlayFromUri: song received");
             try {
-
-
+                // FIXME: Not able to clear notification from header
                 try {
                     mMediaPlayer.setDataSource(uri.toString());
-
                 } catch( IllegalStateException e ) {
-                    mMediaPlayer.release();
+                    Log.e(TAG, "onPlayFromUri: " + e.toString());
+                    if (mMediaPlayer != null) {
+                        mMediaPlayer.stop();
+                        mMediaPlayer.reset();
+                        mMediaPlayer.release();
+                    }
                     initMediaPlayer();
                     mMediaPlayer.setDataSource(uri.toString());
+                    showPausedNotification();
                 }
-
                 initMediaSessionMetadata(uri.toString());
-
+                mMediaPlayer.prepareAsync();
             } catch (IOException e) {
+                Log.e(TAG, "onPlayFromUri: "+e.toString());
                 return;
             }
-
-            try {
-                mMediaPlayer.prepare();
-            } catch (IOException e) {}
 
             //Work with extras here if you want
         }
@@ -185,16 +195,20 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
     }
 
     private void initNotification() {
-
-        mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,
-                    CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
-            notificationChannel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-            notificationChannel.setShowBadge(true);
-            notificationChannel.setSound(null,null);
-            notificationChannel.enableVibration(false);
-            mNotificationManager.createNotificationChannel(notificationChannel);
+        try {
+            mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME,
+                        NotificationManager.IMPORTANCE_LOW);
+                notificationChannel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+                notificationChannel.setShowBadge(true);
+                notificationChannel.setSound(null, null);
+                notificationChannel.enableVibration(false);
+                mNotificationManager.createNotificationChannel(notificationChannel);
+            }
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "initNotification"+ e.toString());
         }
     }
 
@@ -206,12 +220,33 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        audioManager.abandonAudioFocus(this);
-        unregisterReceiver(mNoisyReceiver);
-        mMediaSessionCompat.release();
-        NotificationManagerCompat.from(this).cancel(1);
+        try {
+            super.onDestroy();
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            audioManager.abandonAudioFocus(this);
+            unregisterReceiver(mNoisyReceiver);
+            if(mMediaSessionCompat != null){
+                mMediaSessionCompat.release();
+            }
+            clearNotification();
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "onDestroy"+ e.toString());
+        }
+    }
+
+    private void clearNotification() {
+        try {
+            // NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID);
+
+            mNotificationManager.cancel(NOTIFICATION_ID);
+            mNotificationManager.cancelAll();
+            Log.i(TAG, "clearNotification");
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "clearNotification"+ e.toString());
+        }
+
     }
 
     private void initMediaPlayer() {
@@ -230,8 +265,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous, "Previous", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_pause, "Pause", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_next, "Next", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
-
-            builder.setSmallIcon(R.drawable.ic_play_circle);
             builder.setChannelId(CHANNEL_ID);
             mNotificationManagerCompat = NotificationManagerCompat.from(this);
             startForeground(NOTIFICATION_ID, builder.build());
@@ -248,7 +281,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous, "Previous", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_play, "Play", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_next, "Next", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
-            builder.setSmallIcon(R.drawable.ic_play_circle);
             builder.setChannelId(CHANNEL_ID);
             mNotificationManagerCompat = NotificationManagerCompat.from(this);
             mNotificationManagerCompat.notify(NOTIFICATION_ID,builder.build());
@@ -277,9 +309,11 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
     private void setMediaPlaybackState(int state) {
         PlaybackStateCompat.Builder playbackstateBuilder = new PlaybackStateCompat.Builder();
         if( state == PlaybackStateCompat.STATE_PLAYING ) {
-            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE);
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE
+                    | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
         } else {
-            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY);
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY
+                    | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
         }
         playbackstateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
         mMediaSessionCompat.setPlaybackState(playbackstateBuilder.build());
@@ -294,8 +328,8 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
         HashMap<String, Object> metaData = utils.extractMetaData(url);
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
         //Notification icon in card
-        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
-        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
+        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
+        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, (Bitmap) metaData.get("artcover"));
 
         //lock screen icon for pre lollipop
         metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, (Bitmap) metaData.get("artcover"));
@@ -327,9 +361,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
                     AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
         }
 
-
-
-
         return result == AudioManager.AUDIOFOCUS_GAIN;
     }
 
@@ -339,7 +370,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
     @Override
     public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
         if(TextUtils.equals(clientPackageName, getPackageName())) {
-            return new BrowserRoot(getString(R.string.app_name), null);
+            return new BrowserRoot("RNAudio", null);
         }
         return null;
     }
@@ -398,4 +429,3 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
         return super.onStartCommand(intent, flags, startId);
     }
 }
-
