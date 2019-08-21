@@ -52,23 +52,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         mMediaBrowserCompat.connect();
         mService = new MediaPlayerService();
     }
-
-
-    @ReactMethod
-    public void destroy(){
-        try {
-            mMediaBrowserCompat.disconnect();
-        } catch (Exception e) {
-            //TODO: handle exception
-            Log.e(TAG, "destroy"+ e.toString());
-        }
-    }
-
-    @Override
-    public void onCatalystInstanceDestroy() {
-        mContext = getReactApplicationContext();
-    }
-
+    
     @Override
     public void onCatalystInstanceDestroy() {
         try {
