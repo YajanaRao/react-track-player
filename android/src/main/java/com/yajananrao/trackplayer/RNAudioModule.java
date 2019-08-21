@@ -1,6 +1,5 @@
 package com.yajananrao.trackplayer;
 
-
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.net.Uri;
 import android.content.Intent;
@@ -55,9 +54,32 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     }
 
 
+    @ReactMethod
+    public void destroy(){
+        try {
+            mMediaBrowserCompat.disconnect();
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "destroy"+ e.toString());
+        }
+    }
+
     @Override
     public void onCatalystInstanceDestroy() {
         mContext = getReactApplicationContext();
+    }
+
+    @Override
+    public void onCatalystInstanceDestroy() {
+        try {
+            Log.i(TAG, "onCatalystInstanceDestroy: destroy");
+            if(mMediaBrowserCompat != null){
+                mMediaBrowserCompat.disconnect();
+            }
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "onCatalystInstanceDestroy: " + e.toString());
+        }
     }
 
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {

@@ -238,7 +238,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat  implements Me
     private void clearNotification() {
         try {
             // NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID);
-
             mNotificationManager.cancel(NOTIFICATION_ID);
             mNotificationManager.cancelAll();
             Log.i(TAG, "clearNotification");
