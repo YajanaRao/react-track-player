@@ -100,6 +100,9 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 sendEvent(mContext, "media", "paused");
                 break;
             }
+            case PlaybackStateCompat.STATE_STOPPED: {
+                sendEvent(mContext, "media", "completed");
+            }
             case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT: {
                 sendEvent(mContext, "media", "skip_to_next");
                 break;
@@ -126,9 +129,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     }
 
     private void waitForConnection(Runnable r) {
-        Log.i(TAG, "waitForConnection: got runnable");
         if (mService != null) {
-            Log.i(TAG, "waitForConnection: posting");
             mService.post(r);
             return;
         }
@@ -136,7 +137,6 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         if (connecting){
             return;
         }
-        Log.i(TAG, "waitForConnection: creating context");
        
     }
 
