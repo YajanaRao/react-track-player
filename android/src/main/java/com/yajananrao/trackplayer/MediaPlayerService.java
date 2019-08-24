@@ -254,8 +254,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 showPausedNotification();
-                setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
-                setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT);
+                setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
             }
         });
     }
