@@ -18,21 +18,45 @@ Android audio streaming Module for React native
 ## Example
 
 ```javascript
-import Audio from 'react-native-audio';
-
+import RNAudio from 'react-native-audio';
 
 load = () => {
-  Audio.load(
+  RNAudio.load(
     "https://dl.dropboxusercontent.com/s/8avcnxmjtdujytz/Sher%20Aaya%20Sher.mp3?dl=0"
-  );
+  ).then(() => {
+    console.log("audio loaded");
+  });
 }
 
 play = () => {
-  Audio.play();
+  RNAudio.play();
 }
 
 pause = () => {
-  Audio.pause();
+  RNAudio.pause();
 }
-
 ```
+
+Event handler
+```javascript
+import {DeviceEventEmitter} from 'react-native';
+subscription = DeviceEventEmitter.addListener('media', function(event) {
+      // handle event
+      console.log('from event listener', event);
+      if (event == 'skip_to_next') {
+        dispatch(skipToNext());
+      } else if (event == 'skip_to_previous') {
+        dispatch(skipToPrevious());
+      } else if (event == 'completed') {
+        dispatch(skipToNext());
+      } else {
+        dispatch({
+          type: 'STATUS',
+          status: event,
+        });
+      }
+    });
+    
+ subscription.remove();
+```
+
