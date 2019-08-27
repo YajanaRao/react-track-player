@@ -161,12 +161,14 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         public void onSkipToNext() {
             super.onSkipToNext();
             setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT);
+            clearNotification();
         }
 
         @Override
         public void onSkipToPrevious() {
             super.onSkipToPrevious();
             setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS);
+            clearNotification();
         }
 
         @Override
@@ -234,6 +236,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
     private void clearNotification() {
         try {
             // NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID);
+            stopForeground(false);
             mNotificationManager.cancel(NOTIFICATION_ID);
             mNotificationManager.cancelAll();
             Log.i(TAG, "clearNotification");
@@ -252,7 +255,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
-                showPausedNotification();
+                clearNotification();
                 setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
             }
         });
