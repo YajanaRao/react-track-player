@@ -12,6 +12,7 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.bridge.Promise;
 
 import android.os.RemoteException;
 import android.util.Log;
@@ -141,7 +142,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void load(String url) {
+    public void load(String url,final Promise callback) {
         path = url;
         Runnable r = new Runnable(){
         
@@ -150,6 +151,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 if (!path.isEmpty()) {
                     Uri uri = Uri.parse(path);
                     MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(uri, null);
+                    callback.resolve(null);
                 }
 
             }
