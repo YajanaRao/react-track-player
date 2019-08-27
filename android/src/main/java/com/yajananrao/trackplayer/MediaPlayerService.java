@@ -40,7 +40,7 @@ import java.util.List;
 import android.util.Log;
 
 public class MediaPlayerService extends MediaBrowserServiceCompat
-        implements MediaPlayer.OnCompletionListener, AudioManager.OnAudioFocusChangeListener {
+        implements  AudioManager.OnAudioFocusChangeListener {
 
     private static final String TAG = "MediaPlayerService";
     private static final int NOTIFICATION_ID = 101;
@@ -60,14 +60,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         handler.post(r);
     }
 
-    private BroadcastReceiver mNoisyReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
-                mMediaPlayer.pause();
-            }
-        }
-    };
+    private BroadcastReceiver mNoisyReceiver=new BroadcastReceiver(){@Override public void onReceive(Context context,Intent intent){if(mMediaPlayer!=null&&mMediaPlayer.isPlaying()){mMediaPlayer.pause();}}};
 
     private MediaSessionCompat.Callback mMediaSessionCallback = new MediaSessionCompat.Callback() {
 
@@ -83,7 +76,13 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
                 setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
                 initNoisyReceiver();
                 showPlayingNotification();
-                mMediaPlayer.start();
+                mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        mp.start();
+                    }
+                });
+                // mMediaPlayer.start();
             } catch (Exception e) {
                 // TODO: handle exception
                 Log.e(TAG, "onPlay: " + e.toString());
@@ -421,16 +420,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
             }
             break;
         }
-        }
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-        Log.i(TAG, "onCompletion: ");
-        if (mMediaPlayer != null) {
-            Log.i(TAG, "onCompletion: ");
-            setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT);
-            mMediaPlayer.release();
         }
     }
 
