@@ -356,6 +356,10 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         // Notification icon in card
         metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
                 BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
+        if(!metaData.containsKey("artcover")){
+            Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.note);
+            metaData.put("artcover", bitmap);
+        }
         metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, (Bitmap) metaData.get("artcover"));
 
         // lock screen icon for pre lollipop
