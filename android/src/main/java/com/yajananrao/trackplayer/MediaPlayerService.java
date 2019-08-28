@@ -43,7 +43,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         implements  AudioManager.OnAudioFocusChangeListener {
 
     private static final String TAG = "MediaPlayerService";
-    private static final int NOTIFICATION_ID = 101;
+    private static final int NOTIFICATION_ID = 121;
     public static final String CHANNEL_ID = "com_yajananrao_trackplayer";
     private static final String CHANNEL_NAME = "Track Player";
     private NotificationManager mNotificationManager;
@@ -333,10 +333,11 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
     }
 
     private void initMediaSessionMetadata(String url) {
-        Intent appIntent = new Intent(this, MediaPlayerService.class);
+        String packageName = this.getPackageName();
+        Intent appIntent = this.getPackageManager().getLaunchIntentForPackage(packageName);
 
-        PendingIntent appPendingIntent = PendingIntent.getActivity(this, 000, appIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent appPendingIntent = PendingIntent.getActivity(this, 0, appIntent,
+                PendingIntent.FLAG_CANCEL_CURRENT);
 
         Utils utils = new Utils();
         HashMap<String, Object> metaData = utils.extractMetaData(url);
@@ -396,6 +397,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         switch (focusChange) {
         case AudioManager.AUDIOFOCUS_LOSS: {
             if (mMediaPlayer.isPlaying()) {
+                Log.i(TAG, "onAudioFocusChange: AUDIOFOCUS_LOSS");
                 mMediaPlayer.stop();
             }
             break;
@@ -414,9 +416,8 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         case AudioManager.AUDIOFOCUS_GAIN: {
             if (mMediaPlayer != null) {
                 if (!mMediaPlayer.isPlaying()) {
-
+                    Log.i(TAG, "onAudioFocusChange: AUDIOFOCUS_GAIN");
                     mMediaPlayer.prepareAsync();
-
                     mMediaPlayer.start();
                 }
                 mMediaPlayer.setVolume(1.0f, 1.0f);
