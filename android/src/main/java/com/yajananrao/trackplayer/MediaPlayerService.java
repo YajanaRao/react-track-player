@@ -345,6 +345,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
     private void initMediaSessionMetadata(String url) {
         String packageName = this.getPackageName();
         Intent appIntent = this.getPackageManager().getLaunchIntentForPackage(packageName);
+        appIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         PendingIntent appPendingIntent = PendingIntent.getActivity(this, 0, appIntent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
