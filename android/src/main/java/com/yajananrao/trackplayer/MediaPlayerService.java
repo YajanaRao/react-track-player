@@ -75,14 +75,22 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
                 mMediaSessionCompat.setActive(true);
                 setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
                 initNoisyReceiver();
+                try {
+                    mMediaPlayer.start();
+                } catch (Exception e) {
+                    //TODO: handle exception
+                    Log.e(TAG, "onPlay: " + e.toString());
+                    mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                        @Override
+                        public void onPrepared(MediaPlayer mp) {
+                            Log.i(TAG, "onPlay: playing after preparation");
+                            mp.start();
+                        }
+                    });
+                }
+                
                 showPlayingNotification();
-                mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        mp.start();
-                    }
-                });
-                // mMediaPlayer.start();
+                
             } catch (Exception e) {
                 // TODO: handle exception
                 Log.e(TAG, "onPlay: " + e.toString());
@@ -136,6 +144,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
                 // FIXME: Not able to clear notification from header
                 try {
                     mMediaPlayer.setDataSource(uri.toString());
+                    mMediaPlayer.prepareAsync();
                 } catch (IllegalStateException e) {
                     Log.e(TAG, "onPlayFromUri: " + e.toString());
                     if (mMediaPlayer != null) {
@@ -145,10 +154,11 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
                     }
                     initMediaPlayer();
                     mMediaPlayer.setDataSource(uri.toString());
-                    showPausedNotification();
+                    mMediaPlayer.prepare();
                 }
                 initMediaSessionMetadata(uri.toString());
-                mMediaPlayer.prepareAsync();
+                // showPausedNotification();
+                // mMediaPlayer.prepareAsync();
             } catch (IOException e) {
                 Log.e(TAG, "onPlayFromUri: " + e.toString());
                 return;
@@ -436,6 +446,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
+        clearNotification();
         stopSelf();
     }
 
