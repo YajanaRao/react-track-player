@@ -455,7 +455,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                             mMediaPlayer.start();
                             showPlayingNotification();
                         }
-                        mMediaPlayer.setVolume(1.0 f, 1.0 f);
+                        mMediaPlayer.setVolume(1.0f, 1.0f);
                     }
                     break;
                 }
