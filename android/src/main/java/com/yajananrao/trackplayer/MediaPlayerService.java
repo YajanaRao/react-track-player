@@ -436,7 +436,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 {
                     if (mMediaPlayer != null) {
-                        mMediaPlayer.setVolume(0.3 f, 0.3 f);
+                        mMediaPlayer.setVolume(0.3f, 0.3f);
                     }
                     break;
                 }
