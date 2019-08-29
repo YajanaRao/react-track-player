@@ -39,8 +39,7 @@ import java.util.List;
 
 import android.util.Log;
 
-public class MediaPlayerService extends MediaBrowserServiceCompat
-        implements  AudioManager.OnAudioFocusChangeListener {
+public class MediaPlayerService extends MediaBrowserServiceCompat implements AudioManager.OnAudioFocusChangeListener {
 
     private static final String TAG = "MediaPlayerService";
     private static final int NOTIFICATION_ID = 121;
@@ -60,7 +59,14 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         handler.post(r);
     }
 
-    private BroadcastReceiver mNoisyReceiver=new BroadcastReceiver(){@Override public void onReceive(Context context,Intent intent){if(mMediaPlayer!=null&&mMediaPlayer.isPlaying()){mMediaPlayer.pause();}}};
+    private BroadcastReceiver mNoisyReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+                mMediaPlayer.pause();
+            }
+        }
+    };
 
     private MediaSessionCompat.Callback mMediaSessionCallback = new MediaSessionCompat.Callback() {
 
@@ -78,7 +84,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
                 try {
                     mMediaPlayer.start();
                 } catch (Exception e) {
-                    //TODO: handle exception
+                    // TODO: handle exception
                     Log.e(TAG, "onPlay: " + e.toString());
                     mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                         @Override
@@ -88,9 +94,9 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
                         }
                     });
                 }
-                
+
                 showPlayingNotification();
-                
+
             } catch (Exception e) {
                 // TODO: handle exception
                 Log.e(TAG, "onPlay: " + e.toString());
@@ -206,7 +212,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
             mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME,
-                        NotificationManager.IMPORTANCE_LOW);
+                    NotificationManager.IMPORTANCE_LOW);
                 notificationChannel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
                 notificationChannel.setShowBadge(true);
                 notificationChannel.setSound(null, null);
@@ -261,7 +267,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mMediaPlayer.setVolume(1.0f, 1.0f);
+        mMediaPlayer.setVolume(1.0 f, 1.0 f);
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
@@ -278,16 +284,15 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
                 return;
             }
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous, "Previous", MediaButtonReceiver
-                    .buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
+                .buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_pause, "Pause",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
+                MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_next, "Next",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
+                MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
             builder.setChannelId(CHANNEL_ID);
             mNotificationManagerCompat = NotificationManagerCompat.from(this);
             startForeground(NOTIFICATION_ID, builder.build());
-        } catch (Exception exp) {
-        }
+        } catch (Exception exp) {}
     }
 
     private void showPausedNotification() {
@@ -297,18 +302,17 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
                 return;
             }
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous, "Previous", MediaButtonReceiver
-                    .buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
+                .buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_play, "Play",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
+                MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_next, "Next",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
+                MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
             builder.setChannelId(CHANNEL_ID);
             mNotificationManagerCompat = NotificationManagerCompat.from(this);
             mNotificationManagerCompat.notify(NOTIFICATION_ID, builder.build());
             // startForeground(NOTIFICATION_ID, builder.build());
             stopForeground(false);
-        } catch (Exception exp) {
-        }
+        } catch (Exception exp) {}
     }
 
     private void initMediaSession() {
@@ -317,7 +321,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
 
         mMediaSessionCompat.setCallback(mMediaSessionCallback);
         mMediaSessionCompat.setFlags(
-                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+            MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
 
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setClass(this, MediaButtonReceiver.class);
@@ -330,13 +334,13 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
     private void setMediaPlaybackState(int state) {
         PlaybackStateCompat.Builder playbackstateBuilder = new PlaybackStateCompat.Builder();
         if (state == PlaybackStateCompat.STATE_PLAYING) {
-            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE
-                    | PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
-                    | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE |
+                PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
         } else {
-            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY
-                    | PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
-                    | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY |
+                PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
         }
         playbackstateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
         mMediaSessionCompat.setPlaybackState(playbackstateBuilder.build());
@@ -348,15 +352,15 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         appIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         PendingIntent appPendingIntent = PendingIntent.getActivity(this, 0, appIntent,
-                PendingIntent.FLAG_CANCEL_CURRENT);
+            PendingIntent.FLAG_CANCEL_CURRENT);
 
         Utils utils = new Utils();
-        HashMap<String, Object> metaData = utils.extractMetaData(url);
+        HashMap < String, Object > metaData = utils.extractMetaData(url);
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
         // Notification icon in card
         metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
-                BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
-        if(!metaData.containsKey("artcover")){
+            BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
+        if (!metaData.containsKey("artcover")) {
             Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.note);
             metaData.put("artcover", bitmap);
         }
@@ -366,7 +370,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, (Bitmap) metaData.get("artcover"));
         metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, (String) metaData.get("title"));
         metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
-                (String) metaData.get("albumArtist"));
+            (String) metaData.get("albumArtist"));
         metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, 1);
         metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, 1);
         mMediaSessionCompat.setMetadata(metadataBuilder.build());
@@ -378,9 +382,9 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= 26) {
             focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setOnAudioFocusChangeListener(this)
-                    .setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
-                    .setWillPauseWhenDucked(false).build();
+                .setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
+                .setWillPauseWhenDucked(false).build();
 
             result = audioManager.requestAudioFocus(focus);
         } else {
@@ -403,42 +407,56 @@ public class MediaPlayerService extends MediaBrowserServiceCompat
 
     // Not important for general audio service, required for class
     @Override
-    public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
+    public void onLoadChildren(@NonNull String parentId, @NonNull Result < List < MediaBrowserCompat.MediaItem >> result) {
         result.sendResult(null);
     }
 
     @Override
     public void onAudioFocusChange(int focusChange) {
         switch (focusChange) {
-        case AudioManager.AUDIOFOCUS_LOSS: {
-            if (mMediaPlayer.isPlaying()) {
-                Log.i(TAG, "onAudioFocusChange: AUDIOFOCUS_LOSS");
-                mMediaPlayer.stop();
-            }
-            break;
-        }
-        case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: {
-            mMediaPlayer.pause();
-            showPausedNotification();
-            break;
-        }
-        case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: {
-            if (mMediaPlayer != null) {
-                mMediaPlayer.setVolume(0.3f, 0.3f);
-            }
-            break;
-        }
-        case AudioManager.AUDIOFOCUS_GAIN: {
-            if (mMediaPlayer != null) {
-                if (!mMediaPlayer.isPlaying()) {
-                    Log.i(TAG, "onAudioFocusChange: AUDIOFOCUS_GAIN");
-                    mMediaPlayer.prepareAsync();
-                    mMediaPlayer.start();
+            case AudioManager.AUDIOFOCUS_LOSS:
+                {
+                    if (mMediaPlayer.isPlaying()) {
+                        Log.i(TAG, "onAudioFocusChange: AUDIOFOCUS_LOSS");
+                        mMediaPlayer.stop();
+                        setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
+                        clearNotification();
+                    }
+                    break;
                 }
-                mMediaPlayer.setVolume(1.0f, 1.0f);
-            }
-            break;
-        }
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                {
+                    mMediaPlayer.pause();
+                    setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+                    showPausedNotification();
+                    break;
+                }
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                {
+                    if (mMediaPlayer != null) {
+                        mMediaPlayer.setVolume(0.3 f, 0.3 f);
+                    }
+                    break;
+                }
+            case AudioManager.AUDIOFOCUS_GAIN:
+                {
+                    if (mMediaPlayer != null) {
+                        if (!mMediaPlayer.isPlaying()) {
+                            Log.i(TAG, "onAudioFocusChange: AUDIOFOCUS_GAIN");
+                            try {
+                                mMediaPlayer.prepareAsync();
+                            } catch (IllegalStateException e) {
+                                Log.e(TAG, "onAudioFocusChange: " + e.toString());
+                                // mMediaPlayer.prepare();
+                            }
+                            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+                            mMediaPlayer.start();
+                            showPlayingNotification();
+                        }
+                        mMediaPlayer.setVolume(1.0 f, 1.0 f);
+                    }
+                    break;
+                }
         }
     }
 
