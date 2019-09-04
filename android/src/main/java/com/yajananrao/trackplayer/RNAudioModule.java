@@ -189,7 +189,9 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         
             @Override
             public void run() {
-                mMediaBrowserCompat.disconnect();
+                if(mMediaBrowserCompat != null){
+                    mMediaBrowserCompat.disconnect();
+                }
             }
         };
         waitForConnection(r);
