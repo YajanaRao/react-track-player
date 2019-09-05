@@ -201,6 +201,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             initMediaPlayer();
             initMediaSession();
             initNotification();
+            // initNoisyReceiver();
         } catch (Exception e) {
             // TODO: handle exception
             Log.e(TAG, "onCreate: " + e.toString());
@@ -235,10 +236,13 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
     @Override
     public void onDestroy() {
         try {
+            Log.i(TAG, "onDestroy: started");
             super.onDestroy();
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             audioManager.abandonAudioFocus(this);
-            unregisterReceiver(mNoisyReceiver);
+            if(mNoisyReceiver != null){
+                unregisterReceiver(mNoisyReceiver);
+            }
             if (mMediaSessionCompat != null) {
                 mMediaSessionCompat.release();
             }
@@ -464,15 +468,23 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG, "onStartCommand: started");
         MediaButtonReceiver.handleIntent(mMediaSessionCompat, intent);
-        return super.onStartCommand(intent, flags, startId);
+        super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-        clearNotification();
-        stopSelf();
+        try {
+            Log.i(TAG, "onTaskRemoved: started");
+            super.onTaskRemoved(rootIntent);
+            clearNotification();
+            stopSelf();
+        } catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "onTaskRemoved: "+ e.toString());
+        }
+        
     }
-
 }
