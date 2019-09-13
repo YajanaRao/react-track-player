@@ -148,6 +148,8 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     };
 
 
+
+
     private void updateDuration(MediaMetadataCompat metadata) {
         if (metadata == null) {
             return;
@@ -246,8 +248,8 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                         }
 
                         @Override
-                        public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                            if(b){
+                        public void onProgressChanged(SeekBar seekBar, int i, boolean fromTouch) {
+                            if(fromTouch){
                                 Log.i(TAG, "onProgressChanged: "+i);
                                 mMediaControllerCompat.getTransportControls().seekTo(i);
                             }
@@ -264,6 +266,29 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             }
         };
         waitForConnection(r);
+    }
+
+    @ReactMethod
+    public void update(){
+        Runnable r = new Runnable(){
+            @Override
+            public void run(){
+                updateProgress();
+            }
+        };
+        waitForConnection(r);
+    }
+
+    @ReactMethod
+    public void terminate(){
+        Runnable r = new Runnable(){
+            @Override
+            public void run(){
+                if(mSeekBar != null){
+                    mSeekBar.setMax(0);
+                }
+            }
+        };
     }
 
     @ReactMethod
