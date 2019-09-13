@@ -7,6 +7,8 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.MediaMetadataCompat;
+
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -14,25 +16,44 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.Promise;
 
+import android.os.SystemClock;
+import android.os.Handler;
+import android.os.Looper;
+
+import java.util.concurrent.TimeUnit;
+
 import android.os.RemoteException;
 import android.util.Log;
 
+import android.widget.SeekBar;
+
+
 public class RNAudioModule extends ReactContextBaseJavaModule {
-
-    private static final int STATE_PAUSED = 0;
-    private static final int STATE_PLAYING = 1;
-
-    private int mCurrentState;
 
     private MediaBrowserCompat mMediaBrowserCompat;
     private MediaControllerCompat mMediaControllerCompat;
     private Activity mActivity;
     private ReactContext mContext;
     private MediaPlayerService mService;
+    private PlaybackStateCompat mLastPlaybackState;
+    private SeekBar mSeekBar;
 
     private boolean connecting = false;
     private String path;
     private static final String TAG = "RNAudioModule";
+    private static final long PROGRESS_UPDATE_INTERNAL = 1000;
+    private static final long PROGRESS_UPDATE_INITIAL_INTERVAL = 100;
+    private SeekBarViewManager seekBarManager;
+    private MediaMetadataCompat metadata;
+
+    private Handler mHandler;
+
+    private final Runnable mUpdateProgressTask = new Runnable() {
+        @Override
+        public void run() {
+            updateProgress();
+        }
+    };
 
     @Override
     public String getName() {
@@ -41,6 +62,13 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
 
     public RNAudioModule(ReactApplicationContext reactContext) {
         super(reactContext);
+        Log.i(TAG, "RNAudioModule: seekBar not initialized");
+    }
+
+
+    public RNAudioModule(ReactApplicationContext reactContext, SeekBarViewManager seekBar) {
+        super(reactContext);
+        seekBarManager = seekBar;
     }
 
     @Override
@@ -90,19 +118,19 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             if (state == null) {
                 return;
             }
+            mLastPlaybackState = state;
             switch (state.getState()) {
             case PlaybackStateCompat.STATE_PLAYING: {
-                mCurrentState = STATE_PLAYING;
                 sendEvent(mContext, "media", "playing");
                 break;
             }
             case PlaybackStateCompat.STATE_PAUSED: {
-                mCurrentState = STATE_PAUSED;
                 sendEvent(mContext, "media", "paused");
                 break;
             }
             case PlaybackStateCompat.STATE_STOPPED: {
                 sendEvent(mContext, "media", "completed");
+                break;
             }
             case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT: {
                 sendEvent(mContext, "media", "skip_to_next");
@@ -118,6 +146,49 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             }
         }
     };
+
+
+    private void updateDuration(MediaMetadataCompat metadata) {
+        if (metadata == null) {
+            return;
+        }
+
+        int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+        Log.d(TAG, "updateDuration: "+duration);
+        if(mSeekBar != null){
+            mSeekBar.setMin(0);
+            mSeekBar.setMax(duration);
+            updateProgress();
+        }
+    }
+
+    private void updateProgress() {
+        if (mLastPlaybackState == null) {
+            return;
+        }
+        long currentPosition = mLastPlaybackState.getPosition();
+        Log.i(TAG, "Current position: "+currentPosition);
+        if (mLastPlaybackState.getState() == PlaybackStateCompat.STATE_PLAYING) {
+            // Calculate the elapsed time between the last position update and now and unless
+            // paused, we can assume (delta * speed) + current position is approximately the
+            // latest position. This ensure that we do not repeatedly call the getPlaybackState()
+            // on MediaControllerCompat.
+            long timeDelta = SystemClock.elapsedRealtime() -
+                    mLastPlaybackState.getLastPositionUpdateTime();
+            float playbackSpeed = mLastPlaybackState.getPlaybackSpeed();
+            Log.i(TAG, "teme delta"+ timeDelta + " playback speed "+ playbackSpeed);
+            if(playbackSpeed == 0){
+                Log.i(TAG, "playback speed is null");
+                currentPosition += (int) timeDelta;
+            }else {
+                currentPosition += (int) timeDelta * mLastPlaybackState.getPlaybackSpeed();
+            }
+
+        }
+        int position = (int) currentPosition;
+        Log.i(TAG, "updateProgress: "+position);
+        mSeekBar.setProgress(position);
+    }
 
     private void sendEvent(ReactContext reactContext, String eventName, String params) {
         try {
@@ -150,10 +221,46 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             public void run() {
                 if (!path.isEmpty()) {
                     Uri uri = Uri.parse(path);
-                    MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(uri, null);
+                    mMediaControllerCompat.getTransportControls().playFromUri(uri, null);
                     callback.resolve(null);
                 }
 
+            }
+        };
+        waitForConnection(r);
+    }
+
+    @ReactMethod
+    public void init(){
+        Runnable r = new Runnable(){
+            @Override
+            public void run() {
+                mSeekBar = seekBarManager.getSeekBarInstance();
+                metadata = mMediaControllerCompat.getMetadata();
+                updateDuration(metadata);
+                if(mSeekBar != null){
+                    mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+                        @Override
+                        public void onStartTrackingTouch(SeekBar seekBar) {
+                        }
+
+                        @Override
+                        public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                            if(b){
+                                Log.i(TAG, "onProgressChanged: "+i);
+                                mMediaControllerCompat.getTransportControls().seekTo(i);
+                            }
+                        }
+
+                        @Override
+                        public void onStopTrackingTouch(SeekBar seekBar) {
+//                            int pos = seekBar.getProgress();
+//                            Log.i(TAG, "onStopTrackingTouch: "+pos);
+//                             mMediaControllerCompat.getTransportControls().seekTo(pos);
+                        }
+                    });
+                }
             }
         };
         waitForConnection(r);
@@ -165,7 +272,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         
             @Override
             public void run() {
-                MediaControllerCompat.getMediaController(mActivity).getTransportControls().play();
+                mMediaControllerCompat.getTransportControls().play();
             }
         };
         waitForConnection(r);
@@ -177,7 +284,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         
             @Override
             public void run() {
-                MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
+                mMediaControllerCompat.getTransportControls().pause();
             }
         };
        waitForConnection(r);
