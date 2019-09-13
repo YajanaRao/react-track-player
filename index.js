@@ -1,5 +1,6 @@
 import { NativeModules } from "react-native";
-import {requireNativeComponent} from 'react-native';
+import ProgressBar from './ProgressBar';
+
 
 module.exports = NativeModules.RNAudio;
-module.exports.ProgressBar = requireNativeComponent('SeekBar');
+module.exports.ProgressBar = ProgressBar;
