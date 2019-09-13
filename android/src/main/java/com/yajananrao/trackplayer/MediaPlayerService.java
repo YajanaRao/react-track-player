@@ -349,7 +349,8 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                     | PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                     | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
         }
-        playbackstateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
+        int position = mMediaPlayer.getCurrentPosition();
+        playbackstateBuilder.setState(state, position, 1.0f);
         mMediaSessionCompat.setPlaybackState(playbackstateBuilder.build());
     }
 
