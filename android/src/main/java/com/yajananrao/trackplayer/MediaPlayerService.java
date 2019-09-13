@@ -24,8 +24,7 @@ import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.text.TextUtils;
-import android.support.v4.media.session.PlaybackStateCompat;
+import android.text.TextUtils;;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -190,6 +189,8 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
         @Override
         public void onSeekTo(long pos) {
             super.onSeekTo(pos);
+            Log.i(TAG, "onSeekTo"+pos);
+            mMediaPlayer.seekTo((int)pos);
         }
 
     };
@@ -201,7 +202,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             initMediaPlayer();
             initMediaSession();
             initNotification();
-            // initNoisyReceiver();
         } catch (Exception e) {
             // TODO: handle exception
             Log.e(TAG, "onCreate: " + e.toString());
@@ -236,7 +236,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
     @Override
     public void onDestroy() {
         try {
-            Log.i(TAG, "onDestroy: started");
             super.onDestroy();
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             audioManager.abandonAudioFocus(this);
@@ -247,6 +246,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                 mMediaSessionCompat.release();
             }
             clearNotification();
+            stopSelf();
         } catch (Exception e) {
             // TODO: handle exception
             Log.e(TAG, "onDestroy" + e.toString());
@@ -279,6 +279,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                 setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
             }
         });
+       
     }
 
     private void showPlayingNotification() {
@@ -379,6 +380,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                 (String) metaData.get("albumArtist"));
         metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, 1);
         metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, 1);
+        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mMediaPlayer.getDuration());
         mMediaSessionCompat.setMetadata(metadataBuilder.build());
         mMediaSessionCompat.setSessionActivity(appPendingIntent);
     }
@@ -468,7 +470,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(TAG, "onStartCommand: started");
         MediaButtonReceiver.handleIntent(mMediaSessionCompat, intent);
         super.onStartCommand(intent, flags, startId);
         return START_STICKY;
@@ -477,7 +478,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         try {
-            Log.i(TAG, "onTaskRemoved: started");
             super.onTaskRemoved(rootIntent);
             clearNotification();
             stopSelf();
@@ -485,6 +485,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             //TODO: handle exception
             Log.e(TAG, "onTaskRemoved: "+ e.toString());
         }
-        
     }
+
 }

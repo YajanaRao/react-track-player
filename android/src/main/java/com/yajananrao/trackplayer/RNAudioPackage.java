@@ -9,19 +9,35 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import android.util.Log;
+
 public class RNAudioPackage implements ReactPackage {
+    private static final String TAG = "RNAudioPackage";
+
+    private SeekBarViewManager seekBarView;
 
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-        return Collections.emptyList();
+        if(seekBarView == null){
+            Log.i(TAG,"Creating seekbar instance in view manager");
+            seekBarView = new SeekBarViewManager();
+        }
+        Log.i(TAG, "sending seekbar instance to react native");
+        return Collections.<ViewManager>singletonList(
+            seekBarView
+        );
     }
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
 
-        modules.add(new RNAudioModule(reactContext));
+        if(seekBarView == null){
+            Log.i(TAG, "Creating seekbar instance in native module");
+            seekBarView = new SeekBarViewManager();
+        }
 
+        modules.add(new RNAudioModule(reactContext, seekBarView));
         return modules;
     }
 
