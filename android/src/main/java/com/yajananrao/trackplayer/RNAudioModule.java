@@ -158,38 +158,41 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
         Log.d(TAG, "updateDuration: "+duration);
         if(mSeekBar != null){
-            mSeekBar.setMin(0);
+            // mSeekBar.setMin(0);
             mSeekBar.setMax(duration);
             updateProgress();
         }
     }
 
     private void updateProgress() {
-        if (mLastPlaybackState == null) {
-            return;
-        }
-        long currentPosition = mLastPlaybackState.getPosition();
-        Log.i(TAG, "Current position: "+currentPosition);
-        if (mLastPlaybackState.getState() == PlaybackStateCompat.STATE_PLAYING) {
-            // Calculate the elapsed time between the last position update and now and unless
-            // paused, we can assume (delta * speed) + current position is approximately the
-            // latest position. This ensure that we do not repeatedly call the getPlaybackState()
-            // on MediaControllerCompat.
-            long timeDelta = SystemClock.elapsedRealtime() -
-                    mLastPlaybackState.getLastPositionUpdateTime();
-            float playbackSpeed = mLastPlaybackState.getPlaybackSpeed();
-            Log.i(TAG, "teme delta"+ timeDelta + " playback speed "+ playbackSpeed);
-            if(playbackSpeed == 0){
-                Log.i(TAG, "playback speed is null");
-                currentPosition += (int) timeDelta;
-            }else {
-                currentPosition += (int) timeDelta * mLastPlaybackState.getPlaybackSpeed();
+        try{
+            if (mLastPlaybackState == null) {
+                return;
             }
-
+            long currentPosition = mLastPlaybackState.getPosition();
+            Log.i(TAG, "Current position: "+currentPosition);
+            if (mLastPlaybackState.getState() == PlaybackStateCompat.STATE_PLAYING) {
+                // Calculate the elapsed time between the last position update and now and unless
+                // paused, we can assume (delta * speed) + current position is approximately the
+                // latest position. This ensure that we do not repeatedly call the getPlaybackState()
+                // on MediaControllerCompat.
+                long timeDelta = SystemClock.elapsedRealtime() -
+                        mLastPlaybackState.getLastPositionUpdateTime();
+                float playbackSpeed = mLastPlaybackState.getPlaybackSpeed();
+                Log.i(TAG, "teme delta"+ timeDelta + " playback speed "+ playbackSpeed);
+                if(playbackSpeed == 0){
+                    Log.i(TAG, "playback speed is null");
+                    currentPosition += (int) timeDelta;
+                }else {
+                    currentPosition += (int) timeDelta * mLastPlaybackState.getPlaybackSpeed();
+                }
+            } 
+            int position = (int) currentPosition;
+            Log.i(TAG, "updateProgress: "+position);
+            mSeekBar.setProgress(position);
+        }catch(Exception e){
+            Log.e(TAG, "updateProgress: " + e.toString());
         }
-        int position = (int) currentPosition;
-        Log.i(TAG, "updateProgress: "+position);
-        mSeekBar.setProgress(position);
     }
 
     private void sendEvent(ReactContext reactContext, String eventName, String params) {
