@@ -155,9 +155,8 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
              if (metadata == null) {
                 return;
             }
-
-            int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
             if(mSeekBar != null){
+                int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
                 Log.d(TAG, "updateDuration: "+duration);
                 mSeekBar.setMax(duration);
                 updateProgress();
