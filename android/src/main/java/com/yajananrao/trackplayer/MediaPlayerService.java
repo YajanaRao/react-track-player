@@ -189,7 +189,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
         @Override
         public void onSeekTo(long pos) {
             super.onSeekTo(pos);
-            Log.i(TAG, "onSeekTo"+pos);
+            Log.i(TAG, "onSeekTo "+pos);
             mMediaPlayer.seekTo((int)pos);
         }
 
@@ -387,9 +387,8 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                     (String) metaData.get("albumArtist"));
             metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, 1);
             metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, 1);
-            if(mMediaPlayer != null){
-                metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mMediaPlayer.getDuration());
-            }
+            String duration = (String) metaData.get("duration");
+            metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION,  Long.parseLong(duration));
             mMediaSessionCompat.setMetadata(metadataBuilder.build());
             mMediaSessionCompat.setSessionActivity(appPendingIntent);
        }
