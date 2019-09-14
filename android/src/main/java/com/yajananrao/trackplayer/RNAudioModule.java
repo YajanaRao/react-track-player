@@ -151,22 +151,26 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
 
 
     private void updateDuration(MediaMetadataCompat metadata) {
-        if (metadata == null) {
-            return;
-        }
+        try{
+             if (metadata == null) {
+                return;
+            }
 
-        int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
-        Log.d(TAG, "updateDuration: "+duration);
-        if(mSeekBar != null){
-            // mSeekBar.setMin(0);
-            mSeekBar.setMax(duration);
-            updateProgress();
+            int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+            if(mSeekBar != null){
+                Log.d(TAG, "updateDuration: "+duration);
+                mSeekBar.setMax(duration);
+                updateProgress();
+            }
+        }catch(Exception e){
+            Log.e(TAG,"updateDuration: "+e.toString());
         }
+       
     }
 
     private void updateProgress() {
         try{
-            if (mLastPlaybackState == null) {
+            if (mLastPlaybackState == null || mSeekBar == null) {
                 return;
             }
             long currentPosition = mLastPlaybackState.getPosition();
@@ -179,7 +183,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 long timeDelta = SystemClock.elapsedRealtime() -
                         mLastPlaybackState.getLastPositionUpdateTime();
                 float playbackSpeed = mLastPlaybackState.getPlaybackSpeed();
-                Log.i(TAG, "teme delta"+ timeDelta + " playback speed "+ playbackSpeed);
+                Log.i(TAG, "teme delta "+ timeDelta + " playback speed "+ playbackSpeed);
                 if(playbackSpeed == 0){
                     Log.i(TAG, "playback speed is null");
                     currentPosition += (int) timeDelta;
@@ -188,8 +192,11 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 }
             } 
             int position = (int) currentPosition;
-            Log.i(TAG, "updateProgress: "+position);
-            mSeekBar.setProgress(position);
+            if(mSeekBar != null){
+                Log.i(TAG, "updateProgress: "+position);
+                mSeekBar.setProgress(position); 
+            }
+
         }catch(Exception e){
             Log.e(TAG, "updateProgress: " + e.toString());
         }
@@ -241,9 +248,10 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             @Override
             public void run() {
                 mSeekBar = seekBarManager.getSeekBarInstance();
-                metadata = mMediaControllerCompat.getMetadata();
-                updateDuration(metadata);
                 if(mSeekBar != null){
+                    Log.i(TAG, "init: seekBar is not null");
+                    metadata = mMediaControllerCompat.getMetadata();
+                    updateDuration(metadata);
                     mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
                         @Override
