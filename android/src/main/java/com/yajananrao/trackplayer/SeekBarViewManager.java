@@ -6,6 +6,7 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
 
 import android.util.Log;
+import android.view.ViewGroup;
 
 public class SeekBarViewManager extends SimpleViewManager<SeekBar> {
 
@@ -23,6 +24,14 @@ public class SeekBarViewManager extends SimpleViewManager<SeekBar> {
         Log.i(TAG, "createViewInstance: ");
         if(seekBar == null){
             seekBar = new SeekBar(reactContext);
+        }
+        try {
+            final ViewGroup parentView = (ViewGroup) seekBar.getParent();
+            if (parentView != null) {
+                parentView.removeView(seekBar);
+            }
+        } catch (ClassCastException e) {
+            Log.e(TAG, "createViewInstance: "+e.toString());
         }
     	return seekBar;
     }
