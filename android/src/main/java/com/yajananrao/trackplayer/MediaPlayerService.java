@@ -339,6 +339,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
     }
 
     private void setMediaPlaybackState(int state) {
+        int position = 0;
         PlaybackStateCompat.Builder playbackstateBuilder = new PlaybackStateCompat.Builder();
         if (state == PlaybackStateCompat.STATE_PLAYING) {
             playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE
@@ -349,41 +350,52 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                     | PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                     | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
         }
-        int position = mMediaPlayer.getCurrentPosition();
+        if(mMediaPlayer != null){
+            position = mMediaPlayer.getCurrentPosition();
+            Log.i(TAG, "setMediaPlaybackState: position "+ position);
+            
+        }
         playbackstateBuilder.setState(state, position, 1.0f);
         mMediaSessionCompat.setPlaybackState(playbackstateBuilder.build());
     }
 
     private void initMediaSessionMetadata(String url) {
-        String packageName = this.getPackageName();
-        Intent appIntent = this.getPackageManager().getLaunchIntentForPackage(packageName);
-        appIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+       try{
+            String packageName = this.getPackageName();
+            Intent appIntent = this.getPackageManager().getLaunchIntentForPackage(packageName);
+            appIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        PendingIntent appPendingIntent = PendingIntent.getActivity(this, 0, appIntent,
-                PendingIntent.FLAG_CANCEL_CURRENT);
+            PendingIntent appPendingIntent = PendingIntent.getActivity(this, 0, appIntent,
+                    PendingIntent.FLAG_CANCEL_CURRENT);
 
-        Utils utils = new Utils();
-        HashMap<String, Object> metaData = utils.extractMetaData(url);
-        MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
-        // Notification icon in card
-        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
-                BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
-        if (!metaData.containsKey("artcover")) {
-            Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.note);
-            metaData.put("artcover", bitmap);
-        }
-        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, (Bitmap) metaData.get("artcover"));
+            Utils utils = new Utils();
+            HashMap<String, Object> metaData = utils.extractMetaData(url);
+            MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
+            // Notification icon in card
+            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
+                    BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
+            if (!metaData.containsKey("artcover")) {
+                Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.note);
+                metaData.put("artcover", bitmap);
+            }
+            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, (Bitmap) metaData.get("artcover"));
 
-        // lock screen icon for pre lollipop
-        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, (Bitmap) metaData.get("artcover"));
-        metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, (String) metaData.get("title"));
-        metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
-                (String) metaData.get("albumArtist"));
-        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, 1);
-        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, 1);
-        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mMediaPlayer.getDuration());
-        mMediaSessionCompat.setMetadata(metadataBuilder.build());
-        mMediaSessionCompat.setSessionActivity(appPendingIntent);
+            // lock screen icon for pre lollipop
+            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, (Bitmap) metaData.get("artcover"));
+            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, (String) metaData.get("title"));
+            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
+                    (String) metaData.get("albumArtist"));
+            metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, 1);
+            metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, 1);
+            if(mMediaPlayer != null){
+                metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mMediaPlayer.getDuration());
+            }
+            mMediaSessionCompat.setMetadata(metadataBuilder.build());
+            mMediaSessionCompat.setSessionActivity(appPendingIntent);
+       }
+       catch(Exception e){
+            Log.e(TAG, "initMediaSessionMetadata: "+e.toString());
+       }
     }
 
     private boolean successfullyRetrievedAudioFocus() {
