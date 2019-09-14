@@ -33,6 +33,14 @@ public class Utils {
             }
             metaData.put("albumArtist", albumArtist);
 
+            try{
+                String duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+                Log.i(TAG, "duration: "+duration);
+                metaData.put("duration", duration);
+            } catch (Exception e){
+                Log.i(TAG, "extractMetaData: "+ e.toString());
+            }
+
             try {
                 byte[] imageData = mmr.getEmbeddedPicture();
                 if (imageData != null) {
