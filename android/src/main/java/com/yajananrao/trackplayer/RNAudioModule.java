@@ -15,8 +15,13 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.Promise;
 
-import android.os.SystemClock;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+import android.os.SystemClock;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -32,17 +37,32 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     private MediaPlayerService mService;
     private PlaybackStateCompat mLastPlaybackState;
     private SeekBar mSeekBar;
+    private SeekBarViewManager seekBarManager;
+    private MediaMetadataCompat metadata;
+
+    public Handler handler;
 
     private boolean connecting = false;
+    private boolean seekBarVisible = false;
     private String path;
     private static final String TAG = "RNAudioModule";
     private static final long PROGRESS_UPDATE_INTERNAL = 1000;
     private static final long PROGRESS_UPDATE_INITIAL_INTERVAL = 100;
-    private SeekBarViewManager seekBarManager;
-    private MediaMetadataCompat metadata;
 
+    private final Runnable mUpdateProgressTask = new Runnable() {
+        @Override
+        public void run() {
+            Log.i(TAG, "update progress runnable");
+            updateProgress();
+        }
+    };
 
+    private final ScheduledExecutorService mExecutorService =
+            Executors.newSingleThreadScheduledExecutor();
 
+    private ScheduledFuture<?> mScheduleFuture;
+
+    
     @Override
     public String getName() {
         return "RNAudio";
@@ -110,22 +130,27 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             switch (state.getState()) {
             case PlaybackStateCompat.STATE_PLAYING: {
                 sendEvent(mContext, "media", "playing");
+                scheduleSeekbarUpdate();
                 break;
             }
             case PlaybackStateCompat.STATE_PAUSED: {
                 sendEvent(mContext, "media", "paused");
+                stopSeekbarUpdate();
                 break;
             }
             case PlaybackStateCompat.STATE_STOPPED: {
                 sendEvent(mContext, "media", "completed");
+                stopSeekbarUpdate();
                 break;
             }
             case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT: {
                 sendEvent(mContext, "media", "skip_to_next");
+                stopSeekbarUpdate();
                 break;
             }
             case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS: {
                 sendEvent(mContext, "media", "skip_to_previous");
+                stopSeekbarUpdate();
                 break;
             }
             default: {
@@ -134,9 +159,6 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             }
         }
     };
-
-
-
 
     private void updateDuration(MediaMetadataCompat metadata) {
         try{
@@ -147,6 +169,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
                 Log.d(TAG, "updateDuration: "+duration);
                 mSeekBar.setMax(duration);
+                mSeekBar.setProgress(0);
             }
         }catch(Exception e){
             Log.e(TAG,"updateDuration: "+e.toString());
@@ -154,9 +177,36 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
        
     }
 
+    private void scheduleSeekbarUpdate() {
+        stopSeekbarUpdate();
+        Log.i(TAG, "status "+seekBarVisible);
+        if (!mExecutorService.isShutdown() && seekBarVisible) {
+            Log.i(TAG,"seekbar update");
+            handler = new Handler();
+            mScheduleFuture = mExecutorService.scheduleAtFixedRate(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            handler.post(mUpdateProgressTask);
+                            Log.i(TAG, "runnable");
+//                            waitForConnection(mUpdateProgressTask);
+                        }
+                    }, PROGRESS_UPDATE_INITIAL_INTERVAL,
+                    PROGRESS_UPDATE_INTERNAL, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private void stopSeekbarUpdate() {
+        Log.i(TAG, "stop the update");
+        if (mScheduleFuture != null) {
+            mScheduleFuture.cancel(false);
+        }
+    }
+
     private void updateProgress() {
         try{
             if (mLastPlaybackState == null || mSeekBar == null) {
+                Log.i(TAG, "nothing to update returing");
                 return;
             }
 
@@ -238,13 +288,15 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             public void run() {
                 mSeekBar = seekBarManager.getSeekBarInstance();
                 if(mSeekBar != null){
-                    Log.i(TAG, "init: seekBar is not null");
                     metadata = mMediaControllerCompat.getMetadata();
                     updateDuration(metadata);
+                    seekBarVisible = true;
+                    scheduleSeekbarUpdate();
                     mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
                         @Override
                         public void onStartTrackingTouch(SeekBar seekBar) {
+                            stopSeekbarUpdate();
                         }
 
                         @Override
@@ -257,9 +309,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
 
                         @Override
                         public void onStopTrackingTouch(SeekBar seekBar) {
-//                            int pos = seekBar.getProgress();
-//                            Log.i(TAG, "onStopTrackingTouch: "+pos);
-//                             mMediaControllerCompat.getTransportControls().seekTo(pos);
+                            stopSeekbarUpdate();
                         }
                     });
                 }
@@ -268,22 +318,14 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         waitForConnection(r);
     }
 
-    @ReactMethod
-    public void update(){
-        Runnable r = new Runnable(){
-            @Override
-            public void run(){
-                updateProgress();
-            }
-        };
-        waitForConnection(r);
-    }
 
     @ReactMethod
     public void terminate(){
         Runnable r = new Runnable(){
             @Override
             public void run(){
+                stopSeekbarUpdate();
+                seekBarVisible = false;
                 if(mSeekBar != null){
                     mSeekBar.setMax(0);
                 }
@@ -323,6 +365,8 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             public void run() {
                 if(mMediaBrowserCompat != null){
                     mMediaBrowserCompat.disconnect();
+                    stopSeekbarUpdate();
+                    mExecutorService.shutdown();
                 }
             }
         };
