@@ -17,7 +17,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.support.v4.media.MediaBrowserCompat;
@@ -44,9 +43,10 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
     private static final int NOTIFICATION_ID = 121;
     public static final String CHANNEL_ID = "com_yajananrao_trackplayer";
     private static final String CHANNEL_NAME = "Track Player";
+    private static final String ACTION_PROGRESS_UPDATE = "ACTION_PROGRESS_UPDATE";
+
     private NotificationManager mNotificationManager;
     private NotificationManagerCompat mNotificationManagerCompat;
-
     private MediaPlayer mMediaPlayer;
     private MediaSessionCompat mMediaSessionCompat;
     private AudioFocusRequest focus;
