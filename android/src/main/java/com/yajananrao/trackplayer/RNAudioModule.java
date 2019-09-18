@@ -8,7 +8,6 @@ import android.content.ComponentName;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.MediaMetadataCompat;
-
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -17,10 +16,6 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.Promise;
 
 import android.os.SystemClock;
-import android.os.Handler;
-import android.os.Looper;
-
-import java.util.concurrent.TimeUnit;
 
 import android.os.RemoteException;
 import android.util.Log;
@@ -46,14 +41,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     private SeekBarViewManager seekBarManager;
     private MediaMetadataCompat metadata;
 
-    private Handler mHandler;
 
-    private final Runnable mUpdateProgressTask = new Runnable() {
-        @Override
-        public void run() {
-            updateProgress();
-        }
-    };
 
     @Override
     public String getName() {
@@ -159,7 +147,6 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
                 Log.d(TAG, "updateDuration: "+duration);
                 mSeekBar.setMax(duration);
-                updateProgress();
             }
         }catch(Exception e){
             Log.e(TAG,"updateDuration: "+e.toString());
@@ -172,9 +159,12 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             if (mLastPlaybackState == null || mSeekBar == null) {
                 return;
             }
+
+            mMediaControllerCompat.getTransportControls().sendCustomAction("ACTION_PROGRESS_UPDATE", null);
             long currentPosition = mLastPlaybackState.getPosition();
+
             Log.i(TAG, "Current position: "+currentPosition);
-            if (mLastPlaybackState.getState() == PlaybackStateCompat.STATE_PLAYING) {
+            if (mLastPlaybackState.getState() == PlaybackStateCompat.STATE_PLAYING || mLastPlaybackState.getState() == PlaybackStateCompat.STATE_NONE) {
                 // Calculate the elapsed time between the last position update and now and unless
                 // paused, we can assume (delta * speed) + current position is approximately the
                 // latest position. This ensure that we do not repeatedly call the getPlaybackState()
@@ -187,7 +177,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                     Log.i(TAG, "playback speed is null");
                     currentPosition += (int) timeDelta;
                 }else {
-                    currentPosition += (int) timeDelta * mLastPlaybackState.getPlaybackSpeed();
+                    currentPosition += (int) timeDelta * playbackSpeed;
                 }
             } 
             int position = (int) currentPosition;
