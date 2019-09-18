@@ -155,7 +155,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                     mMediaPlayer.setDataSource(uri.toString());
                     mMediaPlayer.prepareAsync();
                 } catch (IllegalStateException e) {
-                    Log.e(TAG, "onPlayFromUri: " + e.toString());
+                    Log.e(TAG, "onPlayFromUri: set data source failed " + e.toString());
                     if (mMediaPlayer != null) {
                         mMediaPlayer.stop();
                         mMediaPlayer.reset();
@@ -397,7 +397,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
                     BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
             if (!metaData.containsKey("artcover")) {
-                Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.note);
+                Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_audiotrack);
                 metaData.put("artcover", bitmap);
             }
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, (Bitmap) metaData.get("artcover"));
