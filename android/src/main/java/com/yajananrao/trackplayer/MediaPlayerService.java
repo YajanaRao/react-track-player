@@ -193,6 +193,15 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             mMediaPlayer.seekTo((int)pos);
         }
 
+        @Override
+        public void onCustomAction(String action, Bundle extras) {
+            Log.d(TAG, "executing custom action");
+            if(action.equals(ACTION_PROGRESS_UPDATE)){
+                if (mMediaPlayer.isPlaying()) {
+                    setMediaPlaybackState(PlaybackStateCompat.STATE_NONE);
+                }
+            }
+        }
     };
 
     @Override
@@ -345,8 +354,12 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE
                     | PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                     | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
-        } else {
+        } else if(state == PlaybackStateCompat.STATE_PAUSED){
             playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY
+                    | PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+                    | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
+        } else {
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE
                     | PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                     | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
         }
@@ -355,6 +368,11 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             Log.i(TAG, "setMediaPlaybackState: position "+ position);
             
         }
+//        Bundle customActionExtras = new Bundle();
+//        playbackstateBuilder.addCustomAction(new PlaybackStateCompat.CustomAction.Builder(
+//                ACTION_PROGRESS_UPDATE, "", null)
+//                .build());
+
         playbackstateBuilder.setState(state, position, 1.0f);
         mMediaSessionCompat.setPlaybackState(playbackstateBuilder.build());
     }
