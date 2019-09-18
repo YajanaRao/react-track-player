@@ -1,6 +1,6 @@
 package com.yajananrao.trackplayer;
 
-import android.widget.SeekBar;
+import androidx.appcompat.widget.AppCompatSeekBar;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -8,11 +8,14 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import android.util.Log;
 import android.view.ViewGroup;
 
-public class SeekBarViewManager extends SimpleViewManager<SeekBar> {
+public class SeekBarViewManager extends SimpleViewManager<AppCompatSeekBar> {
 
     public static final String REACT_CLASS = "SeekBar";
     private static final String TAG = "SeekBarViewManager";
-    private SeekBar seekBar;
+    private static final int STYLE = android.R.attr.seekBarStyle;
+
+    private AppCompatSeekBar seekBar;
+
 
     @Override
     public String getName() {
@@ -20,10 +23,10 @@ public class SeekBarViewManager extends SimpleViewManager<SeekBar> {
     }
 
     @Override
-    protected SeekBar createViewInstance(ThemedReactContext reactContext) {
-        Log.i(TAG, "createViewInstance: ");
+    protected AppCompatSeekBar createViewInstance(ThemedReactContext reactContext) {
         if(seekBar == null){
-            seekBar = new SeekBar(reactContext);
+            Log.i(TAG, "createViewInstance: ");
+            seekBar = new AppCompatSeekBar(reactContext, null, STYLE);
         }
         try {
             final ViewGroup parentView = (ViewGroup) seekBar.getParent();
@@ -36,7 +39,7 @@ public class SeekBarViewManager extends SimpleViewManager<SeekBar> {
     	return seekBar;
     }
 
-    public SeekBar getSeekBarInstance(){
+    public AppCompatSeekBar getSeekBarInstance(){
     	return seekBar;
     }
 }
