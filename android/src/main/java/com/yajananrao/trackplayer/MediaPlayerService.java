@@ -102,9 +102,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
 
             } catch (Exception e) {
                 // TODO: handle exception
-                Log.e(TAG, "onPlay: " + e.toString());
-                mMediaPlayer.prepareAsync();
-                mMediaPlayer.start();
+                Log.e(TAG, "onPlay: Parent " + e.toString());
             }
         }
 
@@ -148,32 +146,27 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
         @Override
         public void onPlayFromUri(Uri uri, Bundle extras) {
             super.onPlayFromUri(uri, extras);
-            Log.i(TAG, "onPlayFromUri: song received");
+            Log.i(TAG, "onPlayFromUri: song received"+ uri.toString());
             try {
-                // FIXME: Not able to clear notification from header
                 try {
-                    mMediaPlayer.setDataSource(uri.toString());
-                    mMediaPlayer.prepareAsync();
-                } catch (IllegalStateException e) {
-                    Log.e(TAG, "onPlayFromUri: set data source failed " + e.toString());
-                    if (mMediaPlayer != null) {
-                        mMediaPlayer.stop();
-                        mMediaPlayer.reset();
+                    if(mMediaPlayer != null){
+                        if(mMediaPlayer.isPlaying()){
+                            mMediaPlayer.stop();
+                        }
                         mMediaPlayer.release();
                     }
                     initMediaPlayer();
                     mMediaPlayer.setDataSource(uri.toString());
                     mMediaPlayer.prepare();
+//                    mMediaPlayer.prepareAsync()
+                } catch (IllegalStateException e) {
+                    Log.e(TAG, "onPlayFromUri: set data source failed " + e.toString());
                 }
                 initMediaSessionMetadata(uri.toString());
-                // showPausedNotification();
-                // mMediaPlayer.prepareAsync();
             } catch (IOException e) {
                 Log.e(TAG, "onPlayFromUri: " + e.toString());
                 return;
             }
-
-            // Work with extras here if you want
         }
 
         @Override
@@ -397,7 +390,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
                     BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
             if (!metaData.containsKey("artcover")) {
-                Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_audiotrack);
+                Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.app_icon);
                 metaData.put("artcover", bitmap);
             }
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, (Bitmap) metaData.get("artcover"));
