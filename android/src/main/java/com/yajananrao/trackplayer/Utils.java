@@ -22,13 +22,13 @@ public class Utils {
                 mmr.setDataSource(resource);
             }
             String title = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-            if(title.isEmpty() || title == null){
+            if(title == null){
                 title = "Track";
             }
             metaData.put("title",title);
             
             String albumArtist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST);         
-            if(albumArtist == null || albumArtist.isEmpty()){
+            if(albumArtist == null){
                 albumArtist = "Unknown Artist";
             }
             metaData.put("albumArtist", albumArtist);
@@ -57,7 +57,7 @@ public class Utils {
             return metaData;
         }
         catch (Exception exp){
-            Log.e(TAG, "extractMetaData: Failed"+ exp.toString());
+            Log.e(TAG, "extractMetaData: Failed "+ exp.toString());
             return metaData;
         }
     }
