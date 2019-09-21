@@ -108,21 +108,46 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
 
         @Override
         public void onStop() {
-            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            // Abandon audio focus
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                am.abandonAudioFocusRequest(focus);
+            try{
+                AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                // Abandon audio focus
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    am.abandonAudioFocusRequest(focus);
+                }
+                setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
+                try{
+                    if(mNoisyReceiver != null){
+                        unregisterReceiver(mNoisyReceiver);
+                    }
+                }catch (IllegalArgumentException e){
+                    Log.e(TAG, "noisy receiver "+e.toString());
+                }
+
+                // walk around for notification clear issue
+                if(mMediaSessionCompat.isActive()){
+                    Log.i(TAG, "onStartCommand: is active");
+                    String channel = null;
+
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        channel = NotificationChannel.DEFAULT_CHANNEL_ID;
+                    }
+                    startForeground(NOTIFICATION_ID, new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID).build());
+                    stopSelf();
+                }
+                clearNotification();
+
+                // Stop the service
+                stopSelf();
+                // Set the session inactive (and update metadata and state)
+                mMediaSessionCompat.setActive(false);
+                // stop the player (custom call)
+                mMediaPlayer.stop();
+                // Take the service out of the foreground
+                stopForeground(true);
+            }catch (Exception e){
+                Log.e(TAG, "onStop: "+e.toString());
             }
-            setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
-            unregisterReceiver(mNoisyReceiver);
-            // Stop the service
-            stopSelf();
-            // Set the session inactive (and update metadata and state)
-            mMediaSessionCompat.setActive(false);
-            // stop the player (custom call)
-            mMediaPlayer.stop();
-            // Take the service out of the foreground
-            stopForeground(false);
+
         }
 
         @Override
@@ -239,30 +264,9 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
         registerReceiver(mNoisyReceiver, filter);
     }
 
-    @Override
-    public void onDestroy() {
-        try {
-            super.onDestroy();
-            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            audioManager.abandonAudioFocus(this);
-            if(mNoisyReceiver != null){
-                unregisterReceiver(mNoisyReceiver);
-            }
-            if (mMediaSessionCompat != null) {
-                mMediaSessionCompat.release();
-            }
-            clearNotification();
-            stopSelf();
-        } catch (Exception e) {
-            // TODO: handle exception
-            Log.e(TAG, "onDestroy" + e.toString());
-        }
-    }
-
     private void clearNotification() {
         try {
             // NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID);
-            stopForeground(false);
             mNotificationManager.cancel(NOTIFICATION_ID);
             mNotificationManager.cancelAll();
             Log.i(TAG, "clearNotification");
@@ -322,7 +326,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             builder.setChannelId(CHANNEL_ID);
             mNotificationManagerCompat = NotificationManagerCompat.from(this);
             mNotificationManagerCompat.notify(NOTIFICATION_ID, builder.build());
-            // startForeground(NOTIFICATION_ID, builder.build());
+//            startForeground(NOTIFICATION_ID, builder.build());
             stopForeground(false);
         } catch (Exception exp) {
         }
@@ -497,9 +501,11 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG, "onStartCommand: ");
         MediaButtonReceiver.handleIntent(mMediaSessionCompat, intent);
+
         super.onStartCommand(intent, flags, startId);
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -511,6 +517,25 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
         } catch (Exception e) {
             //TODO: handle exception
             Log.e(TAG, "onTaskRemoved: "+ e.toString());
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        try {
+            Log.i(TAG, "onDestroy: ");
+            super.onDestroy();
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            audioManager.abandonAudioFocus(this);
+            if (mMediaSessionCompat != null) {
+                mMediaSessionCompat.release();
+            }
+            clearNotification();
+            stopSelf();
+            stopForeground(false);
+        } catch (Exception e) {
+            // TODO: handle exception
+            Log.e(TAG, "onDestroy" + e.toString());
         }
     }
 
