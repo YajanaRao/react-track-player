@@ -142,7 +142,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 break;
             }
             case PlaybackStateCompat.STATE_STOPPED: {
-                sendEvent(mContext, "media", "completed");
+                sendEvent(mContext, "media", "stopped");
                 playing = false;
                 stopSeekbarUpdate();
                 break;
