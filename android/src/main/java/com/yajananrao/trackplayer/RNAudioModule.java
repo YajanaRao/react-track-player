@@ -19,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
 import android.os.SystemClock;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -53,7 +52,6 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     private final Runnable mUpdateProgressTask = new Runnable() {
         @Override
         public void run() {
-            Log.i(TAG, "update progress runnable");
             updateProgress();
         }
     };
@@ -169,13 +167,13 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     private void updateDuration(MediaMetadataCompat metadata) {
         try{
              if (metadata == null) {
+                Log.i(TAG, "updateDuration: metadata is null");
                 return;
             }
             if(mSeekBar != null){
                 int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
                 Log.d(TAG, "updateDuration: "+duration);
                 mSeekBar.setMax(duration);
-                mSeekBar.setProgress(0);
             }
         }catch(Exception e){
             Log.e(TAG,"updateDuration: "+e.toString());
@@ -185,9 +183,10 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
 
     private void scheduleSeekbarUpdate() {
         stopSeekbarUpdate();
-        Log.i(TAG, "status "+seekBarVisible);
         if (!mExecutorService.isShutdown() && seekBarVisible && playing) {
-            Log.i(TAG,"seekbar update");
+            metadata = mMediaControllerCompat.getMetadata();
+            updateDuration(metadata);
+            Log.d(TAG,"seekbar update");
             handler = new Handler();
             mScheduleFuture = mExecutorService.scheduleAtFixedRate(
                     new Runnable() {
@@ -201,7 +200,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     }
 
     private void stopSeekbarUpdate() {
-        Log.i(TAG, "stop the update");
+        Log.d(TAG, "stop the update");
         if (mScheduleFuture != null) {
             mScheduleFuture.cancel(false);
         }
@@ -210,7 +209,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     private void updateProgress() {
         try{
             if (mLastPlaybackState == null || mSeekBar == null) {
-                Log.i(TAG, "nothing to update returing");
+                Log.d(TAG, "nothing to update returing");
                 stopSeekbarUpdate();
                 return;
             }
@@ -218,7 +217,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             mMediaControllerCompat.getTransportControls().sendCustomAction("ACTION_PROGRESS_UPDATE", null);
             long currentPosition = mLastPlaybackState.getPosition();
 
-            Log.i(TAG, "Current position: "+currentPosition);
+            Log.d(TAG, "Current position: "+currentPosition);
             if (mLastPlaybackState.getState() == PlaybackStateCompat.STATE_PLAYING || mLastPlaybackState.getState() == PlaybackStateCompat.STATE_NONE) {
                 // Calculate the elapsed time between the last position update and now and unless
                 // paused, we can assume (delta * speed) + current position is approximately the
@@ -227,9 +226,9 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 long timeDelta = SystemClock.elapsedRealtime() -
                         mLastPlaybackState.getLastPositionUpdateTime();
                 float playbackSpeed = mLastPlaybackState.getPlaybackSpeed();
-                Log.i(TAG, "teme delta "+ timeDelta + " playback speed "+ playbackSpeed);
+                Log.d(TAG, "teme delta "+ timeDelta + " playback speed "+ playbackSpeed);
                 if(playbackSpeed == 0){
-                    Log.i(TAG, "playback speed is null");
+                    Log.d(TAG, "playback speed is null");
                     currentPosition += (int) timeDelta;
                 }else {
                     currentPosition += (int) timeDelta * playbackSpeed;
@@ -237,8 +236,10 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             } 
             int position = (int) currentPosition;
             if(mSeekBar != null){
-                Log.i(TAG, "updateProgress: "+position);
+                Log.d(TAG, "updateProgress: "+position);
                 mSeekBar.setProgress(position); 
+            }else{
+                stopSeekbarUpdate();
             }
 
         }catch(Exception e){
@@ -251,7 +252,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, params);
         } catch (Exception e) {
             //TODO: handle exception
-            Log.i(TAG, "sendEvent: "+e.toString());
+            Log.d(TAG, "sendEvent: "+e.toString());
         }
        
     }
@@ -277,7 +278,8 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             public void run() {
                 if (!path.isEmpty()) {
                     Uri uri = Uri.parse(path);
-                    mMediaControllerCompat.getTransportControls().playFromUri(uri, null);
+                    stopSeekbarUpdate();
+                    mMediaControllerCompat.getTransportControls().playFromUri(uri, null);   
                     callback.resolve(null);
                 }
 
@@ -301,20 +303,25 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
 
                         @Override
                         public void onStartTrackingTouch(SeekBar seekBar) {
+                            Log.d(TAG, "onStartTrackingTouch");
                             stopSeekbarUpdate();
                         }
 
                         @Override
                         public void onProgressChanged(SeekBar seekBar, int i, boolean fromTouch) {
                             if(fromTouch){
-                                Log.i(TAG, "onProgressChanged: "+i);
-                                mMediaControllerCompat.getTransportControls().seekTo(i);
+                                Log.d(TAG, "onProgressChanged: "+i);
+                                // stopSeekbarUpdate();
+                                // mMediaControllerCompat.getTransportControls().seekTo(i);
+                                
                             }
                         }
 
                         @Override
                         public void onStopTrackingTouch(SeekBar seekBar) {
-                            stopSeekbarUpdate();
+                            Log.d(TAG, "onStopTrackingTouch");
+                            mMediaControllerCompat.getTransportControls().seekTo(seekBar.getProgress());
+                            scheduleSeekbarUpdate();
                         }
                     });
                 }
@@ -331,7 +338,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             public void run(){
                 seekBarVisible = false;
                 stopSeekbarUpdate();
-                Log.i(TAG, "terminating seek bar schedular");
+                Log.d(TAG, "terminating seek bar schedular");
             }
         };
         waitForConnection(r);
@@ -376,5 +383,4 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
         };
         waitForConnection(r);
     }
-
 }
