@@ -161,7 +161,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                     mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                         @Override
                         public void onPrepared(MediaPlayer mp) {
-                            Log.d(TAG, "onPlay: playing after preparation");
+                            Log.d(TAG, "setDataSource: playing after preparation"+canPlay);
                             if(canPlay){
                                 mp.start();
                             }else {
@@ -173,7 +173,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                     mMediaPlayer.prepareAsync();
                 }else{
                     mMediaPlayer.prepare();
-                    canPlay = false;
+                    canPlay = true;
                 }
             } catch (IllegalStateException e) {
                 Log.e(TAG, "onPlayFromUri: set data source failed " + e.toString());
