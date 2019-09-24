@@ -154,6 +154,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                         mMediaPlayer.stop();
                     }
                     mMediaPlayer.release();
+                    canPlay = false;
                 }
                 initMediaPlayer();
                 mMediaPlayer.setDataSource(uri);
@@ -161,7 +162,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
                     mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                         @Override
                         public void onPrepared(MediaPlayer mp) {
-                            Log.d(TAG, "setDataSource: playing after preparation"+canPlay);
+                            Log.d(TAG, "setDataSource: playing after preparation "+canPlay);
                             if(canPlay){
                                 mp.start();
                             }else {
