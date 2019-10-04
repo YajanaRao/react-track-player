@@ -37,7 +37,7 @@ pause = () => {
 }
 ```
 
-Event handler
+### Event handler
 ```javascript
 import {DeviceEventEmitter} from 'react-native';
 subscription = DeviceEventEmitter.addListener('media', function(event) {
@@ -59,4 +59,10 @@ subscription = DeviceEventEmitter.addListener('media', function(event) {
     
  subscription.remove();
 ```
+### Components
 
+#### ProgressBar
+
+`import { ProgressBar } from 'react-native-audio';`
+
+ProgressBar interacts with native audio module and updates the progress. All you need to do is render `<ProgressBar>` with your styles if you want.
