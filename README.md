@@ -62,6 +62,7 @@ subscription = DeviceEventEmitter.addListener('media', function(event) {
 ### Components
 
 #### ProgressBar
+A component base that updates itself every second with a new position.
 
 `import { ProgressBar } from 'react-native-audio';`
 
