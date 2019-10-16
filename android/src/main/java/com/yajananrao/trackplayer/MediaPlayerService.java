@@ -17,12 +17,15 @@ import android.media.MediaPlayer;
 
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.Bundle;
 
+import android.widget.Toast;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -60,12 +63,21 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
 
     boolean resumeOnFocusGain = false;
     boolean canPlay = false;
+    boolean isConnected = true;
     public Handler handler;
 
     public void post(Runnable r) {
         handler = new Handler();
         handler.post(r);
     }
+
+    public boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager 
+            = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
 
     private void playbackNow(){
         Log.i(TAG, "playbackNow: started");
@@ -80,13 +92,17 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             if(canPlay){
                 mMediaPlayer.start();
                 Log.d(TAG, "onPlay: started playing");
-            }else{
+                setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+                showPlayingNotification();
+            }else if(!isConnected){
                 Log.d(TAG, "onPlay: waiting for the prepared listener");
+                Toast.makeText(getApplicationContext(),"No Internet Connection",Toast.LENGTH_SHORT).show();
+                setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+            }else {
                 canPlay = true;
-
             }
-            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
-            showPlayingNotification();
+            
+            
         } catch (Exception e) {
             // TODO: handle exception
             Log.e(TAG, "onPlay: Parent " + e.toString());
@@ -138,6 +154,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             mMediaSessionCompat.setActive(false);
             // stop the player (custom call)
             mMediaPlayer.stop();
+            mMediaPlayer.release();
             // Take the service out of the foreground
             stopForeground(true);
         }catch (Exception e){
@@ -151,27 +168,34 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             try {
                 if(mMediaPlayer != null){
                     if(mMediaPlayer.isPlaying()){
-                        mMediaPlayer.stop();
+                        stopPlayback();
                     }
-                    mMediaPlayer.release();
+                    // mMediaPlayer.release();
                     canPlay = false;
                 }
                 initMediaPlayer();
                 mMediaPlayer.setDataSource(uri);
                 if(uri.toLowerCase().startsWith("http://") || uri.toLowerCase().startsWith("https://")){
-                    mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                        @Override
-                        public void onPrepared(MediaPlayer mp) {
-                            Log.d(TAG, "setDataSource: playing after preparation "+canPlay);
-                            if(canPlay){
-                                mp.start();
-                            }else {
-                                canPlay = true;
+                    if(isNetworkAvailable()){
+                        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                            @Override
+                            public void onPrepared(MediaPlayer mp) {
+                                Log.d(TAG, "setDataSource: playing after preparation "+canPlay);
+                                if(canPlay){
+                                    playbackNow();
+                                }else {
+                                    canPlay = true;
+                                }
+                                
                             }
-                            
-                        }
-                    });
-                    mMediaPlayer.prepareAsync();
+                        });
+                        mMediaPlayer.prepareAsync();
+                    }else {
+                        Log.e(TAG, "onPlayFromUri: No internet connection");
+                        isConnected = false;
+                        Toast.makeText(getApplicationContext(),"No Internet Connection",Toast.LENGTH_SHORT).show();  
+                    }
+                    
                 }else{
                     mMediaPlayer.prepare();
                     canPlay = true;
