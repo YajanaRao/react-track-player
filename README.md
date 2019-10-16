@@ -1,5 +1,5 @@
-# react-native-audio 
-Android audio streaming Module for React native
+# react-native-audio 🎧
+Android  audio streaming Module for React native
 
 ## Features
 - [x] Background play
