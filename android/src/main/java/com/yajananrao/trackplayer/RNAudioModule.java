@@ -280,12 +280,12 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                     Uri uri = Uri.parse(path);
                     stopSeekbarUpdate();
                     mMediaControllerCompat.getTransportControls().playFromUri(uri, null);   
-                    callback.resolve(null);
                 }
 
             }
         };
         waitForConnection(r);
+        callback.resolve(null);
     }
 
     @ReactMethod
