@@ -45,7 +45,6 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     private boolean seekBarVisible = false;
     private boolean playing = false;
     private String path;
-    private boolean playOnLoad;
     private static final String TAG = "RNAudioModule";
     private static final long PROGRESS_UPDATE_INTERNAL = 1000;
     private static final long PROGRESS_UPDATE_INITIAL_INTERVAL = 100;
@@ -277,9 +276,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void load(String url, boolean play) {
-        path = url;
-        playOnLoad = play;
+    public void load(final String path, final Promise callback) {
         Runnable r = new Runnable(){
         
             @Override
@@ -288,9 +285,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                     Uri uri = Uri.parse(path);
                     stopSeekbarUpdate();
                     mMediaControllerCompat.getTransportControls().playFromUri(uri, null);
-                    if(playOnLoad){
-                        mMediaControllerCompat.getTransportControls().play();
-                    }
+                    callback.resolve(null);
                 }
 
             }
