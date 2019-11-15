@@ -183,6 +183,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
     private void setDataSource(String uri){
         Log.d(TAG, "onPlayFromUri: song received "+ uri);
         try {
+            initalLoad = true;
             if(mMediaPlayer != null){
                 if(mMediaPlayer.isPlaying()){
                     stopPlayback();
