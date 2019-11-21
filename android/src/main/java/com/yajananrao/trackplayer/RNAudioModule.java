@@ -127,6 +127,12 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
             }
             mLastPlaybackState = state;
             switch (state.getState()) {
+            case PlaybackStateCompat.STATE_BUFFERING: {
+                sendEvent(mContext, "media", "loading");
+                playing = false;
+                stopSeekbarUpdate();
+                break;
+            }
             case PlaybackStateCompat.STATE_PLAYING: {
                 sendEvent(mContext, "media", "playing");
                 playing = true;
@@ -270,8 +276,7 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void load(String url,final Promise callback) {
-        path = url;
+    public void load(final String path, final Promise callback) {
         Runnable r = new Runnable(){
         
             @Override
@@ -279,13 +284,13 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
                 if (!path.isEmpty()) {
                     Uri uri = Uri.parse(path);
                     stopSeekbarUpdate();
-                    mMediaControllerCompat.getTransportControls().playFromUri(uri, null);   
+                    mMediaControllerCompat.getTransportControls().playFromUri(uri, null);
+                    callback.resolve(null);
                 }
 
             }
         };
         waitForConnection(r);
-        callback.resolve(null);
     }
 
     @ReactMethod
