@@ -37,7 +37,7 @@ public class MediaPlayerPackage implements ReactPackage {
             seekBarView = new SeekBarViewManager();
         }
 
-        modules.add(new RNAudioModule(reactContext, seekBarView));
+        modules.add(new MediaPlayerModule(reactContext, seekBarView));
         return modules;
     }
 
