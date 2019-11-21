@@ -1,4 +1,4 @@
-# react-native-audio 🎧
+# react-native-media-player 🎧
 Android  audio streaming Module for React native
 
 ## Features
@@ -9,19 +9,19 @@ Android  audio streaming Module for React native
 ## Install
 
 ### Using npm
-`npm install https://github.com/YajanaRao/react-native-audio.git --save` 
+`npm install https://github.com/YajanaRao/react-native-media-player.git --save` 
 
 ### Using Yarn
 
-`yarn add https://github.com/YajanaRao/react-native-audio.git --save `
+`yarn add https://github.com/YajanaRao/react-native-media-player.git --save `
 
 ## Example
 
 ```javascript
-import RNAudio from 'react-native-audio';
+import MediaPlayer from 'react-native-media-player';
 
 load = () => {
-  RNAudio.load(
+  MediaPlayer.load(
     "https://dl.dropboxusercontent.com/s/8avcnxmjtdujytz/Sher%20Aaya%20Sher.mp3?dl=0"
   ).then(() => {
     console.log("audio loaded");
@@ -29,11 +29,11 @@ load = () => {
 }
 
 play = () => {
-  RNAudio.play();
+  MediaPlayer.play();
 }
 
 pause = () => {
-  RNAudio.pause();
+  MediaPlayer.pause();
 }
 ```
 
@@ -64,6 +64,6 @@ subscription = DeviceEventEmitter.addListener('media', function(event) {
 #### ProgressBar
 A component base that updates itself every second with a new position.
 
-`import { ProgressBar } from 'react-native-audio';`
+`import { ProgressBar } from 'react-native-media-player';`
 
 ProgressBar interacts with native audio module and updates the progress. All you need to do is render `<ProgressBar>` with your styles if you want.
