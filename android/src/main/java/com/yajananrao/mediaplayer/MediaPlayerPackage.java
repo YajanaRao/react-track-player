@@ -11,8 +11,8 @@ import java.util.List;
 
 import android.util.Log;
 
-public class RNAudioPackage implements ReactPackage {
-    private static final String TAG = "RNAudioPackage";
+public class MediaPlayerPackage implements ReactPackage {
+    private static final String TAG = "MediaPlayerPackage";
 
     private SeekBarViewManager seekBarView;
 

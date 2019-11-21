@@ -27,7 +27,7 @@ import android.util.Log;
 import android.widget.SeekBar;
 
 
-public class RNAudioModule extends ReactContextBaseJavaModule {
+public class MediaPlayerModule extends ReactContextBaseJavaModule {
 
     private MediaBrowserCompat mMediaBrowserCompat;
     private MediaControllerCompat mMediaControllerCompat;
@@ -64,16 +64,16 @@ public class RNAudioModule extends ReactContextBaseJavaModule {
     
     @Override
     public String getName() {
-        return "RNAudio";
+        return "MediaPlayer";
     }
 
-    public RNAudioModule(ReactApplicationContext reactContext) {
+    public MediaPlayerModule(ReactApplicationContext reactContext) {
         super(reactContext);
         Log.i(TAG, "RNAudioModule: seekBar not initialized");
     }
 
 
-    public RNAudioModule(ReactApplicationContext reactContext, SeekBarViewManager seekBar) {
+    public MediaPlayerModule(ReactApplicationContext reactContext, SeekBarViewManager seekBar) {
         super(reactContext);
         seekBarManager = seekBar;
     }
