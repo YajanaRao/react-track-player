@@ -1,4 +1,4 @@
-package com.yajananrao.trackplayer;
+package com.yajananrao.mediaplayer;
 
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.net.Uri;

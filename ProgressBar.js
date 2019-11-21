@@ -1,34 +1,20 @@
-import {requireNativeComponent} from 'react-native';
-import { NativeModules, StyleSheet } from "react-native";
-import React from 'react';
-const SeekBar = requireNativeComponent('SeekBar');
-const RNAudio = NativeModules.RNAudio;
-
+import { requireNativeComponent } from "react-native";
+import { StyleSheet } from "react-native";
+import React from "react";
+const SeekBar = requireNativeComponent("SeekBar");
 
 class ProgressBar extends React.Component {
-
-	componentDidMount() {
-	    RNAudio.init();
-
-  	}
-
-  	componentWillUnmount(){
-  	    RNAudio.terminate();
-  	}
-
-
-
-	render(){
-		return <SeekBar style={this.props.style ? this.props.style : styles.bar} />	
-	}
+  render() {
+    return <SeekBar style={this.props.style ? this.props.style : styles.bar} />;
+  }
 }
 
 const styles = StyleSheet.create({
   bar: {
-       height: '100%',
-       width: '100%',
-       margin: 10
-     }
+    height: "100%",
+    width: "100%",
+    margin: 10
+  }
 });
 
 export default ProgressBar;

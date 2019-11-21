@@ -1,4 +1,4 @@
-package com.yajananrao.trackplayer;
+package com.yajananrao.mediaplayer;
 
 import android.app.NotificationManager;
 import android.content.Context;
@@ -12,7 +12,7 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import androidx.media.session.MediaButtonReceiver;
 
-import static com.yajananrao.trackplayer.MediaPlayerService.CHANNEL_ID;
+import static com.yajananrao.mediaplayer.MediaPlayerService.CHANNEL_ID;
 
 public class MediaStyleHelper {
 

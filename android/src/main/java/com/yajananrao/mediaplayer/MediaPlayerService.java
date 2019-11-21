@@ -1,4 +1,4 @@
-package com.yajananrao.trackplayer;
+package com.yajananrao.mediaplayer;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -48,7 +48,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
 
     private static final String TAG = "MediaPlayerService";
     private static final int NOTIFICATION_ID = 121;
-    public static final String CHANNEL_ID = "com_yajananrao_trackplayer";
+    public static final String CHANNEL_ID = "com_yajananrao_mediaplayer";
     private static final String CHANNEL_NAME = "Track Player";
     private static final String ACTION_PROGRESS_UPDATE = "ACTION_PROGRESS_UPDATE";
 
