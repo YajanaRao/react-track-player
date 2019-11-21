@@ -390,7 +390,6 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
             builder.setChannelId(CHANNEL_ID);
             mNotificationManagerCompat = NotificationManagerCompat.from(this);
             mNotificationManagerCompat.notify(NOTIFICATION_ID, builder.build());
-//            startForeground(NOTIFICATION_ID, builder.build());
             stopForeground(false);
         } catch (Exception exp) {
         }
