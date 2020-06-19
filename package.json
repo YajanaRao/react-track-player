@@ -2,6 +2,16 @@
   "name": "react-native-media-player",
   "version": "1.2.0",
   "description": "A fully fledged audio module created for music apps",
+  "private": true,
+  "main": "lib/index.js",
+  "source": "src/index.ts",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "react-native": "lib/index.js",
   "contributors": [
     {
       "name": "Yajana N Rao",
@@ -22,6 +32,9 @@
     "android",
     "hooks"
   ],
+  "scripts": {
+    "tsc": "tsc"
+  },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

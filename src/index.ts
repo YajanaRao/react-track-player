@@ -1,6 +1,7 @@
 import { NativeModules } from "react-native";
 import ProgressBar from './ProgressBar';
 
+const { MediaPlayer } = NativeModules;
 
-module.exports = NativeModules.MediaPlayer;
-module.exports.ProgressBar = ProgressBar;
+export { MediaPlayer };
+export { ProgressBar };
