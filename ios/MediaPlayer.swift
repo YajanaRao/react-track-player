@@ -6,5 +6,14 @@ public class MediaPlayer: NSObject {
     // Date is ready to use!
     resolve(NSNull());
   }
+  
+  @objc(pause)
+  public func pause() {
+    print("pause")
+  }
 
+  @objc(play)
+  public func play() {
+    print("play")
+  }
 }

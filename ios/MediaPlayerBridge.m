@@ -8,4 +8,8 @@ RCT_EXTERN_METHOD(load:(NSString *)url
             rejecter:(RCTPromiseRejectBlock)reject);
 
 
+RCT_EXTERN_METHOD(play);
+        
+RCT_EXTERN_METHOD(pause);
+
 @end

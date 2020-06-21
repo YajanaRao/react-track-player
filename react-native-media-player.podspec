@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   # optional - use expanded license entry instead:
   # s.license    = { :type => "MIT", :file => "LICENSE" }
   s.authors      = { "Yajana N Rao" => "yajananrao@gmail.com" }
-  s.platforms    = { :ios => "9.0" }
+  s.platforms    = { :ios => "8.0" }
   # s.source       = {}
   s.source       = { :git => "https://github.com/YajanaRao/react-native-media-player.git", :tag => "#{s.version}" }
 
