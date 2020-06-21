@@ -16,4 +16,10 @@ public class MediaPlayer: NSObject {
   public func play() {
     print("play")
   }
+
+  @objc(init)
+  public func init() {
+    print("init")
+  }
+  
 }
