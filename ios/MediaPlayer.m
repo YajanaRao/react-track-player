@@ -1,8 +1,7 @@
-#import "MediaPlayer.h"
 
-@implementation MediaPlayer
+#import <React/RCTBridgeModule.h>
 
-RCT_EXPORT_MODULE()
+@interface RCT_EXTERN_MODULE(MediaPlayerManager, NSObject)
 
 RCT_EXTERN_METHOD(load:(NSString *)url)
 
