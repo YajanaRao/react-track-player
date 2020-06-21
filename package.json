@@ -1,7 +1,10 @@
 {
   "name": "react-native-media-player",
-  "version": "1.2.0",
+  "version": "0.0.1",
   "description": "A fully fledged audio module created for music apps",
+  "summary": "Cross platform music player",
+  "author": "Yajana N Rao <yajananrao@gmail.com>",
+  "homepage": "https://github.com/YajanaRao/react-native-media-player.git#readme",
   "private": true,
   "main": "lib/index.js",
   "source": "src/index.ts",

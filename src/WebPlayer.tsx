@@ -1,9 +1,8 @@
-import ProgressBar from './ProgressBar';
 
-const  MediaPlayer =  {
-    player: HTMLAudioElement,
+const MediaPlayer = {
+    player: new Audio(),
     load(url: string) {
-        return new Promise( (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             try {
                 this.player = new Audio(url);
                 resolve();
@@ -12,12 +11,12 @@ const  MediaPlayer =  {
             }
         })
     },
-    play(){
-        this.player.play();
+    play() {
+        this.player.play().then(() => console.log("playing"))
     },
-    pause(){
+    pause() {
         this.player.pause();
     }
 }
 
-export { MediaPlayer };
+export {MediaPlayer};
