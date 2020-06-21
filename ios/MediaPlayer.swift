@@ -1,5 +1,5 @@
-@objc(MediaPlayerManager)
-public class MediaPlayerManager: NSObject {
+@objc(MediaPlayer)
+public class MediaPlayer: NSObject {
 
   @objc(load:resolver:rejecter:)
   public func load(to url: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
