@@ -1,3 +1,4 @@
+import { DeviceEventEmitter } from "react-native";
 
 const MediaPlayer = {
     player: new Audio(),
@@ -5,6 +6,10 @@ const MediaPlayer = {
         return new Promise((resolve, reject) => {
             try {
                 this.player = new Audio(url);
+                this.player.onended = () => {
+                    console.log("done playing");
+                    DeviceEventEmitter.emit("skip_to_next");
+                }
                 resolve();
             } catch (e) {
                 reject();
@@ -12,11 +17,11 @@ const MediaPlayer = {
         })
     },
     play() {
-        this.player.play().then(() => console.log("playing"))
+        this.player.play().then(() => console.log("playing"));
     },
     pause() {
         this.player.pause();
     }
 }
 
-export {MediaPlayer};
+export { MediaPlayer };
