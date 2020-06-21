@@ -1,9 +1,10 @@
 @objc(MediaPlayerManager)
 class MediaPlayerManager: NSObject {
 
-  @objc(load:url:)
-  func load(url: String) -> Void {
+  @objc(load:resolver:rejecter:)
+  func load(url: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
     // Date is ready to use!
+    resolve(NSNull());
   }
 
 }
