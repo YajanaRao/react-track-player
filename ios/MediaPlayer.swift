@@ -1,25 +1,30 @@
+import AVFoundation
+
 @objc(MediaPlayer)
 public class MediaPlayer: NSObject {
 
+    var avPlayer:AVAudioPlayer!
   @objc(load:resolver:rejecter:)
   public func load(to url: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
     // Date is ready to use!
-    resolve(NSNull());
+    do {
+        let fileURL = URL(string:url);
+        let soundData = try Data(contentsOf:fileURL!)
+        avPlayer = try AVAudioPlayer(data: soundData)
+        resolve(NSNull());
+    } catch {
+        reject("Failed", "Something went wrong", error);
+    }
   }
   
   @objc(pause)
   public func pause() {
-    print("pause")
+    avPlayer.pause();
   }
 
   @objc(play)
   public func play() {
-    print("play")
-  }
-
-  @objc(init)
-  public func init() {
-    print("init")
+    avPlayer.play();
   }
   
 }
