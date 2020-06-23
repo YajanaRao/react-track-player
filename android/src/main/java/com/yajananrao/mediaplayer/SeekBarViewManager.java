@@ -3,7 +3,6 @@ package com.yajananrao.mediaplayer;
 import androidx.appcompat.widget.AppCompatSeekBar;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.uimanager.annotations.ReactProp;
 
 import android.util.Log;
 import android.view.ViewGroup;

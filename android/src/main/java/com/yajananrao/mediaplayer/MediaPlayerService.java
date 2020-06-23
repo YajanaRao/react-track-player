@@ -3,7 +3,11 @@ package com.yajananrao.mediaplayer;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.*;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.Context;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
@@ -33,8 +37,6 @@ import androidx.media.session.MediaButtonReceiver;
 
 import java.util.HashMap;
 import java.util.List;
-import java.lang.Thread;
-import java.lang.Runnable;
 
 public class MediaPlayerService extends MediaBrowserServiceCompat implements AudioManager.OnAudioFocusChangeListener {
 
@@ -178,10 +180,8 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
         Log.d(TAG, "onPlayFromUri: song received " + uri);
         try {
             initalLoad = true;
-            if (mMediaPlayer != null) {
-                if (mMediaPlayer.isPlaying()) {
-                    stopPlayback();
-                }
+            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+                stopPlayback();
             }
             initMediaPlayer();
             mMediaPlayer.setDataSource(uri);

@@ -44,7 +44,6 @@ public class MediaPlayerModule extends ReactContextBaseJavaModule {
     private boolean connecting = false;
     private boolean seekBarVisible = false;
     private boolean playing = false;
-    private String path;
     private static final String TAG = "RNAudioModule";
     private static final long PROGRESS_UPDATE_INTERNAL = 1000;
     private static final long PROGRESS_UPDATE_INITIAL_INTERVAL = 100;
