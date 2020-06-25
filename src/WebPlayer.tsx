@@ -7,7 +7,6 @@ const MediaPlayer = {
         return new Promise((resolve, reject) => {
             try {
                 this.player = new Audio(url);
-                this.player.addEventListener('ended', () => DeviceEventEmitter.emit("skip_to_next"));
                 resolve();
             } catch (e) {
                 reject();
@@ -17,7 +16,11 @@ const MediaPlayer = {
     },
     play() {
         try {
-            this.player.play().then(() => log.debug("MediaPlayer", "playing")).catch(error => log.error("MediaPlayer", error))
+            this.player.play().catch(error => log.error("MediaPlayer", error));
+            this.player.addEventListener('ended', () => {
+                log.debug("media player", "ended");
+                DeviceEventEmitter.emit("skip_to_next")
+            });
         } catch (error) {
             log.error("Web Player", error);
         }
