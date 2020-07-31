@@ -1,12 +1,12 @@
 {
-  "name": "react-native-media-player",
-  "version": "1.2.0",
+  "name": "react-track-player",
+  "version": "1.0.0",
   "description": "A fully fledged audio module created for music apps",
   "contributors": [
     {
       "name": "Yajana N Rao",
       "email": "yajananrao@gmail.com",
-      "url": "http://yajana.herokuapp.com"
+      "url": "http://yajanarao.github.io"
     }
   ],
   "keywords": [
@@ -25,9 +25,9 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YajanaRao/react-native-media-player.git"
+    "url": "https://github.com/YajanaRao/react-native-audio-player.git"
   },
   "bugs": {
-    "url": "https://github.com/YajanaRao/react-native-media-player/issues"
+    "url": "https://github.com/YajanaRao/react-native-audio-player/issues"
   }
 }
