@@ -25,9 +25,9 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YajanaRao/react-native-audio-player.git"
+    "url": "https://github.com/YajanaRao/react-track-player.git"
   },
   "bugs": {
-    "url": "https://github.com/YajanaRao/react-native-audio-player/issues"
+    "url": "https://github.com/YajanaRao/react-track-player/issues"
   }
 }
