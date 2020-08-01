@@ -1,4 +1,4 @@
-package com.yajananrao.mediaplayer;
+package com.yajananrao.trackplayer;
 
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.net.Uri;
@@ -27,13 +27,13 @@ import android.util.Log;
 import android.widget.SeekBar;
 
 
-public class MediaPlayerModule extends ReactContextBaseJavaModule {
+public class TrackPlayerModule extends ReactContextBaseJavaModule {
 
     private MediaBrowserCompat mMediaBrowserCompat;
     private MediaControllerCompat mMediaControllerCompat;
     private Activity mActivity;
     private ReactContext mContext;
-    private MediaPlayerService mService;
+    private TrackPlayerService mService;
     private PlaybackStateCompat mLastPlaybackState;
     private SeekBar mSeekBar;
     private SeekBarViewManager seekBarManager;
@@ -44,7 +44,7 @@ public class MediaPlayerModule extends ReactContextBaseJavaModule {
     private boolean connecting = false;
     private boolean seekBarVisible = false;
     private boolean playing = false;
-    private static final String TAG = "RNAudioModule";
+    private static final String TAG = "TrackPlayer";
     private static final long PROGRESS_UPDATE_INTERNAL = 1000;
     private static final long PROGRESS_UPDATE_INITIAL_INTERVAL = 100;
 
@@ -63,16 +63,16 @@ public class MediaPlayerModule extends ReactContextBaseJavaModule {
     
     @Override
     public String getName() {
-        return "MediaPlayer";
+        return "TrackPlayer";
     }
 
-    public MediaPlayerModule(ReactApplicationContext reactContext) {
+    public TrackPlayerModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        Log.i(TAG, "RNAudioModule: seekBar not initialized");
+        Log.i(TAG, "seekBar not initialized");
     }
 
 
-    public MediaPlayerModule(ReactApplicationContext reactContext, SeekBarViewManager seekBar) {
+    public TrackPlayerModule(ReactApplicationContext reactContext, SeekBarViewManager seekBar) {
         super(reactContext);
         seekBarManager = seekBar;
     }
@@ -82,10 +82,10 @@ public class MediaPlayerModule extends ReactContextBaseJavaModule {
         mContext = getReactApplicationContext();
         mActivity = getCurrentActivity();
         Intent intent = mActivity.getIntent();
-        mMediaBrowserCompat = new MediaBrowserCompat(mActivity, new ComponentName(mActivity, MediaPlayerService.class),
+        mMediaBrowserCompat = new MediaBrowserCompat(mActivity, new ComponentName(mActivity, TrackPlayerService.class),
                 mMediaBrowserCompatConnectionCallback, intent.getExtras());
         mMediaBrowserCompat.connect();
-        mService = new MediaPlayerService();
+        mService = new TrackPlayerService();
     }
     
     @Override

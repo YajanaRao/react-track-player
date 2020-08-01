@@ -1,7 +1,6 @@
 import { DeviceEventEmitter } from "react-native";
-import { log } from '@nadha/utils';
 
-const MediaPlayer = {
+const TrackPlayer = {
     player: new Audio(),
     load(url: string) {
         return new Promise((resolve, reject) => {
@@ -10,28 +9,27 @@ const MediaPlayer = {
                 resolve();
             } catch (e) {
                 reject();
-                log.error("Web Player", e);
+                console.log("Web Player", e);
             }
         })
     },
     play() {
         try {
-            this.player.play().catch(error => log.error("MediaPlayer", error));
+            this.player.play().catch(error => console.log(error));
             this.player.addEventListener('ended', () => {
-                log.debug("media player", "ended");
                 DeviceEventEmitter.emit("skip_to_next")
             });
         } catch (error) {
-            log.error("Web Player", error);
+            console.log("Web Player", error);
         }
     },
     pause() {
         try {
             this.player.pause();
         } catch (error) {
-            log.error("Web Player", error);
+            console.log("Web Player", error);
         }
     }
 }
 
-export { MediaPlayer };
+export { TrackPlayer };

@@ -12,7 +12,9 @@
   "types": "lib/index.d.ts",
   "files": [
     "lib",
-    "src"
+    "src",
+    "android",
+    "ios"
   ],
   "react-native": "lib/index.js",
   "contributors": [
@@ -49,5 +51,12 @@
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@yajanarao"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.7"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.6",
+    "react-native": ">=0.60.0"
   }
 }

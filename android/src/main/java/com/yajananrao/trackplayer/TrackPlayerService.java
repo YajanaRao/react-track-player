@@ -1,4 +1,4 @@
-package com.yajananrao.mediaplayer;
+package com.yajananrao.trackplayer;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -38,9 +38,9 @@ import androidx.media.session.MediaButtonReceiver;
 import java.util.HashMap;
 import java.util.List;
 
-public class MediaPlayerService extends MediaBrowserServiceCompat implements AudioManager.OnAudioFocusChangeListener {
+public class TrackPlayerService extends MediaBrowserServiceCompat implements AudioManager.OnAudioFocusChangeListener {
 
-    private static final String TAG = "MediaPlayerService";
+    private static final String TAG = "TrackPlayerService";
     private static final int NOTIFICATION_ID = 121;
     public static final String CHANNEL_ID = "com_yajananrao_mediaplayer";
     private static final String CHANNEL_NAME = "Track Player";
@@ -58,7 +58,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
     boolean resumeOnFocusGain = false;
     boolean isConnected = true;
     boolean onlineResource = false;
-    boolean initalLoad = true;
+    boolean initialLoad = true;
     public Handler handler;
 
     public void post(Runnable r) {
@@ -77,7 +77,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
         mMediaPlayer.start();
         setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
         showPlayingNotification();
-        initalLoad = false;
+        initialLoad = false;
     }
 
     private void playbackNow() {
@@ -90,7 +90,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
         try {
             mMediaSessionCompat.setActive(true);
             initNoisyReceiver();
-            if (initalLoad) {
+            if (initialLoad) {
                 Log.d(TAG, "initial load is happening");
                 setMediaPlaybackState(PlaybackStateCompat.STATE_BUFFERING);
                 if (onlineResource) {
@@ -179,7 +179,7 @@ public class MediaPlayerService extends MediaBrowserServiceCompat implements Aud
     private void setDataSource(final String uri) {
         Log.d(TAG, "onPlayFromUri: song received " + uri);
         try {
-            initalLoad = true;
+            initialLoad = true;
             if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
                 stopPlayback();
             }

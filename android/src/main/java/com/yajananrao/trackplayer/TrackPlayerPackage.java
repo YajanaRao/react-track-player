@@ -1,4 +1,4 @@
-package com.yajananrao.mediaplayer;
+package com.yajananrao.trackplayer;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
@@ -11,8 +11,8 @@ import java.util.List;
 
 import android.util.Log;
 
-public class MediaPlayerPackage implements ReactPackage {
-    private static final String TAG = "MediaPlayerPackage";
+public class TrackPlayerPackage implements ReactPackage {
+    private static final String TAG = "TrackPlayer";
 
     private SeekBarViewManager seekBarView;
 
@@ -37,7 +37,7 @@ public class MediaPlayerPackage implements ReactPackage {
             seekBarView = new SeekBarViewManager();
         }
 
-        modules.add(new MediaPlayerModule(reactContext, seekBarView));
+        modules.add(new TrackPlayerModule(reactContext, seekBarView));
         return modules;
     }
 

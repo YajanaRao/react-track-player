@@ -21,7 +21,7 @@ Cross Platform audio streaming Module for React native
 ## Example
 
 ```javascript
-import MediaPlayer from "react-track-player";
+import TrackPlayer from "react-track-player";
 
 load = () => {
   MediaPlayer.load(
@@ -32,11 +32,11 @@ load = () => {
 };
 
 play = () => {
-  MediaPlayer.play();
+  TrackPlayer.play();
 };
 
 pause = () => {
-  MediaPlayer.pause();
+  TrackPlayer.pause();
 };
 ```
 
@@ -73,3 +73,7 @@ A component base that updates itself every second with a new position.
 `import { ProgressBar } from 'react-track-player';`
 
 ProgressBar interacts with native audio module and updates the progress. All you need to do is render `<ProgressBar>` with your styles if you want.
+
+### Development
+
+Demo app is in `/example` directory

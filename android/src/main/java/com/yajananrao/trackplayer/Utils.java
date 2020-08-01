@@ -1,4 +1,4 @@
-package com.yajananrao.mediaplayer;
+package com.yajananrao.trackplayer;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

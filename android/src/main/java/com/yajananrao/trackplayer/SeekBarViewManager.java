@@ -1,4 +1,4 @@
-package com.yajananrao.mediaplayer;
+package com.yajananrao.trackplayer;
 
 import androidx.appcompat.widget.AppCompatSeekBar;
 import com.facebook.react.uimanager.SimpleViewManager;
