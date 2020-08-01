@@ -17,7 +17,8 @@ import {
   Text,
   StatusBar,
   Button,
-  DeviceEventEmitter
+  DeviceEventEmitter,
+  ActivityIndicator
 } from 'react-native';
 
 import {
@@ -31,9 +32,10 @@ import TrackPlayer from "react-track-player";
 
 declare const global: { HermesInternal: null | {} };
 
-const App = () => {
-  const [audioState, setAudioState] = useState("init")
-  let subscription = null
+const PlayBar = () => {
+  const [audioState, setAudioState] = useState("init");
+  let subscription = null;
+
   useEffect(() => {
     subscription = DeviceEventEmitter.addListener("media", function (event) {
       // handle event
@@ -52,22 +54,39 @@ const App = () => {
       subscription.remove();
     }
   }, []);
+
   const loadAudio = () => {
+    setAudioState("loading")
     TrackPlayer.load(
-      "https://dl.dropboxusercontent.com/s/8avcnxmjtdujytz/Sher%20Aaya%20Sher.mp3?dl=0"
+      "https://dl.dropboxusercontent.com/s/6nwin3y04ohkep7/the-weeknd-kendrick-lamar-pray-for-me.mp3?dl=0"
     ).then(() => {
       console.log("audio loaded");
-      setAudioState("loaded")
+      setAudioState("paused")
     });
   }
 
-  const playAudio = () => {
-    TrackPlayer.play()
+  switch (audioState) {
+    case "playing":
+      return <Button title="Pause" onPress={() => TrackPlayer.pause()} />
+    case "paused":
+      return <Button title="Play" onPress={() => TrackPlayer.play()} />
+    case "loading":
+      return <ActivityIndicator />
+    default:
+      return (
+        <View>
+          <Text>{audioState}</Text>
+          <Button title="Load" onPress={loadAudio} />
+        </View>
+      )
   }
+}
 
-  const pauseAudio = () => {
-    TrackPlayer.pause()
-  }
+const App = () => {
+
+
+
+
 
   return (
     <>
@@ -77,9 +96,7 @@ const App = () => {
           contentInsetAdjustmentBehavior="automatic"
           style={styles.scrollView}>
           <Header />
-          <View style={styles.engine}>
-            <Text style={styles.footer}>{audioState}</Text>
-          </View>
+
 
           <View style={styles.body}>
             <View style={styles.sectionContainer}>
@@ -87,15 +104,7 @@ const App = () => {
               <Text style={styles.sectionDescription}>
                 Click <Text style={styles.highlight}>Load</Text> to load the audio
               </Text>
-              <Button title="Load" onPress={loadAudio} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Play Audio</Text>
-              <Button title="Play" onPress={playAudio} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Pause Audio</Text>
-              <Button title="Pause" onPress={pauseAudio} />
+              <PlayBar />
             </View>
           </View>
         </ScrollView>
@@ -132,15 +141,7 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
+  }
 });
 
 export default App;
