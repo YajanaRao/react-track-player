@@ -53,6 +53,8 @@
     "registry": "https://npm.pkg.github.com/@yajanarao"
   },
   "devDependencies": {
+    "react": ">=16.8.6",
+    "react-native": ">=0.60.0",
     "typescript": "^3.9.7"
   },
   "peerDependencies": {
