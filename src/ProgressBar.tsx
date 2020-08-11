@@ -1,14 +1,14 @@
-import {requireNativeComponent, StyleProp, ViewProps} from "react-native";
+import React, { useEffect } from "react";
 import { NativeModules, StyleSheet } from "react-native";
-import React, {useEffect} from "react";
+import { requireNativeComponent, StyleProp, ViewProps } from "react-native";
 const SeekBar = requireNativeComponent("SeekBar");
-const MediaPlayer = NativeModules.MediaPlayer;
+const TrackPlayer = NativeModules.TrackPlayer;
 
-const ProgressBar = ({style}:{style: StyleProp<ViewProps>}) => {
+const ProgressBar = ({ style }: { style: StyleProp<ViewProps> }) => {
   useEffect(() => {
-    MediaPlayer.init();
+    TrackPlayer.init();
     return () => {
-      MediaPlayer.terminate();
+      TrackPlayer.terminate();
     }
   }, [])
   // @ts-ignore
