@@ -44,16 +44,9 @@
     "release": "release-it"
   },
   "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/YajanaRao/react-track-player.git"
-  },
+  "repository": "https://github.com/YajanaRao/react-track-player.git",
   "bugs": {
     "url": "https://github.com/YajanaRao/react-track-player/issues"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/",
-    "access": "public"
   },
   "devDependencies": {
     "@types/jest": "^26.0.9",
