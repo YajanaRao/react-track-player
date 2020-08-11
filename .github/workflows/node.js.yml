@@ -30,6 +30,7 @@ jobs:
       - run: npm install react react-native @types/react @types/react-native
       - run: npm run build --if-present
       - run: npm publish
+      - run: git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com" && git config --global user.name "$GITHUB_ACTOR"
         with:
           node-version: 12
           registry-url: https://npm.pkg.github.com/
