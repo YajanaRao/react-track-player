@@ -15,7 +15,7 @@ const TrackPlayer = {
     },
     play() {
         try {
-            this.player.play().catch(error => console.log(error));
+            this.player.play().catch((error: any) => console.log(error));
             this.player.addEventListener('ended', () => {
                 DeviceEventEmitter.emit("skip_to_next")
             });

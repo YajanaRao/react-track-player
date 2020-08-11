@@ -69,5 +69,9 @@
     "github": {
       "release": true
     }
+  },
+  "dependencies": {
+    "@types/react": "^16.9.46",
+    "@types/react-native": "^0.63.7"
   }
 }
