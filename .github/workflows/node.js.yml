@@ -24,7 +24,7 @@ jobs:
           scope: "@yajanarao"
 
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: echo "//npm.pkg.github.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
 
