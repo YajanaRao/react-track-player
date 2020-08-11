@@ -52,7 +52,7 @@
     "url": "https://github.com/YajanaRao/react-track-player/issues"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@yajanarao",
+    "registry": "https://npm.pkg.github.com/",
     "access": "public"
   },
   "devDependencies": {
