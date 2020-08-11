@@ -28,6 +28,7 @@ jobs:
 
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: npm install
       - run: npm install react react-native @types/react @types/react-native
