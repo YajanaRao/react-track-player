@@ -4,6 +4,7 @@ import { requireNativeComponent, StyleProp, ViewProps } from "react-native";
 const SeekBar = requireNativeComponent("SeekBar");
 const TrackPlayer = NativeModules.TrackPlayer;
 
+
 const ProgressBar = ({ style }: { style: StyleProp<ViewProps> }) => {
   useEffect(() => {
     TrackPlayer.init();
