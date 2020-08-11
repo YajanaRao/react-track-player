@@ -21,10 +21,10 @@ Cross Platform audio streaming Module for React native
 ## Example
 
 ```javascript
-import TrackPlayer from "react-track-player";
+import { TrackPlayer } from "react-track-player";
 
 load = () => {
-  MediaPlayer.load(
+  TrackPlayer.load(
     "https://dl.dropboxusercontent.com/s/8avcnxmjtdujytz/Sher%20Aaya%20Sher.mp3?dl=0"
   ).then(() => {
     console.log("audio loaded");
