@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import * as React from 'react';
 import { NativeModules, StyleSheet } from "react-native";
 import { requireNativeComponent, StyleProp, ViewProps } from "react-native";
 const SeekBar = requireNativeComponent("SeekBar");
@@ -6,7 +6,7 @@ const TrackPlayer = NativeModules.TrackPlayer;
 
 
 const ProgressBar = ({ style }: { style: StyleProp<ViewProps> }) => {
-  useEffect(() => {
+  React.useEffect(() => {
     TrackPlayer.init();
     return () => {
       TrackPlayer.terminate();
