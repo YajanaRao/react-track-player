@@ -30,5 +30,9 @@ jobs:
       - run: npm install react react-native @types/react @types/react-native
       - run: npm run build --if-present
       - run: npm publish
+        with:
+          node-version: 12
+          registry-url: https://npm.pkg.github.com/
+          scope: "@yajanarao"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
