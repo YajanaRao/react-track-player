@@ -1,10 +1,10 @@
 {
   "name": "react-track-player",
-  "version": "1.0.3",
+  "version": "1.0.7",
   "description": "A fully fledged audio module created for music apps",
   "summary": "Cross platform music player",
   "author": "Yajana N Rao",
-  "homepage": "https://github.com/YajanaRao/react-native-media-player.git#readme",
+  "homepage": "https://github.com/YajanaRao/react-track-player.git#readme",
   "private": false,
   "main": "lib/index.js",
   "source": "src/index.ts",
@@ -40,7 +40,8 @@
   "scripts": {
     "tsc": "tsc",
     "log": "adb -d logcat com.yajananrao.trackplayer",
-    "build": "tsc"
+    "build": "tsc",
+    "release": "release-it"
   },
   "license": "Apache-2.0",
   "repository": {
@@ -51,15 +52,22 @@
     "url": "https://github.com/YajanaRao/react-track-player/issues"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@yajanarao"
+    "registry": "https://npm.pkg.github.com/@yajanarao",
+    "access": "public"
   },
   "devDependencies": {
     "react": ">=16.8.6",
     "react-native": ">=0.60.0",
+    "release-it": "^13.6.6",
     "typescript": "^3.9.7"
   },
   "peerDependencies": {
     "react": ">=16.8.6",
     "react-native": ">=0.60.0"
+  },
+  "release-it": {
+    "github": {
+      "release": true
+    }
   }
 }
