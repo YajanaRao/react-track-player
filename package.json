@@ -14,7 +14,8 @@
     "lib",
     "src",
     "android",
-    "ios"
+    "ios",
+    "react-track-player.podspec"
   ],
   "react-native": "lib/index.js",
   "contributors": [
