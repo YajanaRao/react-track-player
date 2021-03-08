@@ -1,6 +1,6 @@
 {
   "name": "react-track-player",
-  "version": "1.0.10",
+  "version": "1.0.12",
   "description": "A fully fledged audio module created for music apps",
   "summary": "Cross platform music player",
   "author": "Yajana N Rao",
@@ -52,7 +52,7 @@
   "devDependencies": {
     "@types/jest": "^26.0.9",
     "@types/node": "^14.0.27",
-    "@types/react": "^16.9.46",
+    "@types/react": "^17.0.3",
     "@types/react-native": "^0.63.7",
     "react": ">=16.8.6",
     "react-native": ">=0.60.0",
