@@ -14,6 +14,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReadableMap;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -275,7 +276,11 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void load(final String path, final Promise callback) {
+    public void load(ReadableMap track,final Promise callback) {
+        if(track.hasKey("title")){
+            Log.d("title", track.getString("title"));
+        }
+        final String path = track.getString("path");
         Runnable r = new Runnable(){
         
             @Override
