@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { NativeModules, StyleSheet } from "react-native";
-import { requireNativeComponent, StyleProp, ViewProps } from "react-native";
+import { NativeModules, StyleSheet, requireNativeComponent, StyleProp, ViewProps } from "react-native";
+
+
 const SeekBar = requireNativeComponent("SeekBar");
-const TrackPlayer = NativeModules.TrackPlayer;
+const { TrackPlayer } = NativeModules;
 
 
-const ProgressBar = ({ style }: { style: StyleProp<ViewProps> }) => {
+const ProgressBar = ({ style, thumbTintColor = "green", trackTintColor = "white" }: { style: StyleProp<ViewProps>, thumbTintColor: string, trackTintColor: string }) => {
   React.useEffect(() => {
     TrackPlayer.init();
     return () => {
@@ -13,7 +14,7 @@ const ProgressBar = ({ style }: { style: StyleProp<ViewProps> }) => {
     }
   }, [])
   // @ts-ignore
-  return <SeekBar style={style ? style : styles.bar} />;
+  return <SeekBar style={style || styles.bar} thumbTintColor={thumbTintColor} trackTintColor={trackTintColor} />;
 }
 
 

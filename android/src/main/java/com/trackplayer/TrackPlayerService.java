@@ -1,4 +1,4 @@
-package com.yajananrao.trackplayer;
+package com.trackplayer;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -34,7 +34,10 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.media.MediaBrowserServiceCompat;
 import androidx.media.session.MediaButtonReceiver;
+import com.facebook.react.bridge.ReadableMap;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 
@@ -60,6 +63,7 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
     boolean onlineResource = false;
     boolean initialLoad = true;
     public Handler handler;
+    public static ReadableMap track = null;
 
     public void post(Runnable r) {
         handler = new Handler();
@@ -411,8 +415,10 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
         setSessionToken(mMediaSessionCompat.getSessionToken());
     }
 
+
     private void initMediaSessionMetadata(String url) {
         try {
+            Log.d(TAG, "initMediaSessionMetadata: started "+ TrackPlayerService.track.getString("title"));
             String packageName = this.getPackageName();
             Intent appIntent = this.getPackageManager().getLaunchIntentForPackage(packageName);
             appIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -422,21 +428,37 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
 
             Utils utils = new Utils();
             HashMap<String, Object> metaData = utils.extractMetaData(url);
+            
             MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
             // Notification icon in card
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
                     BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
             if (!metaData.containsKey("artcover")) {
-                Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.app_icon);
-                metaData.put("artcover", bitmap);
+                if(TrackPlayerService.track.hasKey("cover")){
+                    URL coverUrl = new URL(TrackPlayerService.track.getString("cover"));
+                    InputStream content = (InputStream)coverUrl.getContent();
+                    Bitmap bitmap = BitmapFactory.decodeStream(content);
+                    metaData.put("artcover", bitmap);
+                } else {
+                    Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.app_icon);
+                    metaData.put("artcover", bitmap);
+                }
             }
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, (Bitmap) metaData.get("artcover"));
-
+            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, (String) metaData.get("title"));
+            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, (String) metaData.get("albumArtist"));
             // lock screen icon for pre lollipop
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, (Bitmap) metaData.get("artcover"));
-            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, (String) metaData.get("title"));
-            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
-                    (String) metaData.get("albumArtist"));
+            if(TrackPlayerService.track != null){
+                if (TrackPlayerService.track.hasKey("title")){
+                    Log.d(TAG, "initMediaSessionMetadata: "+ TrackPlayerService.track.getString("title"));
+                    metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, (String) TrackPlayerService.track.getString("title"));
+                }
+                if(TrackPlayerService.track.hasKey("artist")){
+                    metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, (String) TrackPlayerService.track.getString("artist"));
+                }
+            }   
+
             metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, 1);
             metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, 1);
             String duration = (String) metaData.get("duration");

@@ -1,4 +1,4 @@
-package com.yajananrao.trackplayer;
+package com.trackplayer;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;

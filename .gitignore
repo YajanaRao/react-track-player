@@ -13,3 +13,4 @@
 .externalNativeBuild
 /node_modules
 /lib
+/android/build

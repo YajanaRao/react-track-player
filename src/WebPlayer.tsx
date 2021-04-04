@@ -6,7 +6,7 @@ const TrackPlayer = {
         return new Promise((resolve, reject) => {
             try {
                 this.player = new Audio(url);
-                resolve();
+                resolve(null);
             } catch (e) {
                 reject();
                 console.log("Web Player", e);

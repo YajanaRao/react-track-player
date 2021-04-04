@@ -1,8 +1,12 @@
-package com.yajananrao.trackplayer;
+package com.trackplayer;
 
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import androidx.appcompat.widget.AppCompatSeekBar;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.annotations.ReactProp;
 
 import android.util.Log;
 import android.view.ViewGroup;
@@ -40,5 +44,26 @@ public class SeekBarViewManager extends SimpleViewManager<AppCompatSeekBar> {
 
     public AppCompatSeekBar getSeekBarInstance(){
     	return seekBar;
+    }
+
+    @ReactProp(name = "thumbTintColor", customType = "Color")
+    public void setThumbTintColor(AppCompatSeekBar seekBar, Integer color) {
+        Log.d(TAG, "setThumbTintColor: ");
+        if (seekBar.getThumb() != null) {
+            if (color == null) {
+                seekBar.getThumb().clearColorFilter();
+            } else {
+                seekBar.getThumb().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            }
+        }
+    }
+
+    @ReactProp(name = "trackTintColor", customType = "Color")
+    public void setMinimumTrackTintColor(AppCompatSeekBar seekBar, Integer color) {
+        if (color == null) {
+            seekBar.getProgressDrawable().clearColorFilter();
+        } else {
+            seekBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
     }
 }

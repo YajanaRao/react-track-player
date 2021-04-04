@@ -1,4 +1,4 @@
-package com.yajananrao.trackplayer;
+package com.trackplayer;
 
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.net.Uri;
@@ -45,7 +45,7 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
     private boolean connecting = false;
     private boolean seekBarVisible = false;
     private boolean playing = false;
-    private static final String TAG = "TrackPlayer";
+    private static final String TAG = "TrackPlayerModule";
     private static final long PROGRESS_UPDATE_INTERNAL = 1000;
     private static final long PROGRESS_UPDATE_INITIAL_INTERVAL = 100;
 
@@ -258,7 +258,7 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
             reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, params);
         } catch (Exception e) {
             //TODO: handle exception
-            Log.d(TAG, "sendEvent: "+e.toString());
+            Log.e(TAG, "sendEvent: "+e.toString());
         }
        
     }
@@ -278,8 +278,9 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void load(ReadableMap track,final Promise callback) {
         if(track.hasKey("title")){
-            Log.d("title", track.getString("title"));
+            Log.d(TAG, "load track "+ track.getString("title"));
         }
+        TrackPlayerService.track = track;
         final String path = track.getString("path");
         Runnable r = new Runnable(){
         

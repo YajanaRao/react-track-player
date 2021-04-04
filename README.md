@@ -74,6 +74,14 @@ A component base that updates itself every second with a new position.
 
 ProgressBar interacts with native audio module and updates the progress. All you need to do is render `<ProgressBar>` with your styles if you want.
 
+`thumbTintColor`
+
+Color of the foreground switch grip.
+
+`trackTintColor`
+
+Assigns a minimum track image. Only static images are supported. The rightmost pixel of the image will be stretched to fill the track.
+
 ### Development
 
 Demo app is in `/example` directory
