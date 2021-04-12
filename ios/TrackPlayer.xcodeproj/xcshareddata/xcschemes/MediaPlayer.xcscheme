@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1140"
+   LastUpgradeVersion = "1230"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "58B511DA1A9E6C8500147676"
-               BuildableName = "libMediaPlayer.a"
-               BlueprintName = "MediaPlayer"
-               ReferencedContainer = "container:MediaPlayer.xcodeproj">
+               BuildableName = "libTrackPlayer.a"
+               BlueprintName = "TrackPlayer"
+               ReferencedContainer = "container:TrackPlayer.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -51,9 +51,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "58B511DA1A9E6C8500147676"
-            BuildableName = "libMediaPlayer.a"
-            BlueprintName = "MediaPlayer"
-            ReferencedContainer = "container:MediaPlayer.xcodeproj">
+            BuildableName = "libTrackPlayer.a"
+            BlueprintName = "TrackPlayer"
+            ReferencedContainer = "container:TrackPlayer.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

@@ -8,7 +8,7 @@ const { TrackPlayer } = NativeModules;
 
 const ProgressBar = ({ style, thumbTintColor = "green", trackTintColor = "white" }: { style: StyleProp<ViewProps>, thumbTintColor: string, trackTintColor: string }) => {
   React.useEffect(() => {
-    TrackPlayer.init();
+    TrackPlayer.setup();
     return () => {
       TrackPlayer.terminate();
     }

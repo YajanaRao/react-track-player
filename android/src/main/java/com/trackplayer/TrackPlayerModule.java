@@ -299,7 +299,7 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void init(){
+    public void setup(){
         Runnable r = new Runnable(){
             @Override
             public void run() {
