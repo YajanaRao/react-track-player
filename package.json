@@ -39,6 +39,7 @@
   ],
   "scripts": {
     "tsc": "tsc",
+    "test": "echo \"no test specified\" ",
     "build": "tsc",
     "release": "release-it"
   },
