@@ -6,7 +6,7 @@ const SeekBar = requireNativeComponent("SeekBar");
 const { TrackPlayer } = NativeModules;
 
 
-const ProgressBar = ({ style, thumbTintColor = "green", trackTintColor = "white" }: { style: StyleProp<ViewProps>, thumbTintColor: string, trackTintColor: string }) => {
+const ProgressBar = ({ style, thumbTintColor = "black", trackTintColor = "white" }: { style: StyleProp<ViewProps>, thumbTintColor: string, trackTintColor: string }) => {
   React.useEffect(() => {
     TrackPlayer.setup();
     return () => {
