@@ -1,8 +1,17 @@
 import * as React from 'react';
-import { NativeModules, StyleSheet, requireNativeComponent, StyleProp, ViewProps } from "react-native";
+import { NativeModules, StyleSheet, requireNativeComponent, StyleProp, ViewProps, Platform, View } from "react-native";
 
-
-const SeekBar = requireNativeComponent("SeekBar");
+let SeekBar = null;
+if (Platform.OS === "android") {
+  SeekBar = requireNativeComponent("SeekBar");
+} else {
+  SeekBar = ({ style, trackTintColor, thumbTintColor }) => (
+    <React.Fragment>
+      <View style={{ backgroundColor: thumbTintColor, height: 16, width: 15, bottom: -10, opacity: 1, borderRadius: 8, alignSelf: 'flex-start' }} />
+      <View style={[style, { backgroundColor: trackTintColor, height: 5, borderRadius: 2, opacity: 0.2 }]} />
+    </React.Fragment>
+  )
+}
 const { TrackPlayer } = NativeModules;
 
 

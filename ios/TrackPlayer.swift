@@ -68,6 +68,11 @@ class TrackPlayer: RCTEventEmitter {
       print("Destroying player")
   }
     
+  @objc(terminate)
+  public func terminate() {
+      print("terminate player")
+  }
+    
 
   override func supportedEvents() -> [String]! {
       return [

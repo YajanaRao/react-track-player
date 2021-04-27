@@ -21,5 +21,7 @@ RCT_EXTERN_METHOD(setup);
 
 RCT_EXTERN_METHOD(destroy);
 
+RCT_EXTERN_METHOD(terminate);
+
 @end
 
