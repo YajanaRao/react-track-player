@@ -12,11 +12,68 @@ class TrackPlayer: RCTEventEmitter {
   var player:AVAudioPlayer!
 
 
+  func setupMediaPlayerNotificationView(title: String){
+    let commandCenter = MPRemoteCommandCenter.shared();
+
+    // add handler for play command
+    commandCenter.playCommand.addTarget { [unowned self] event in
+      self.play();
+      return .success;
+    }
+
+    commandCenter.pauseCommand.addTarget { [unowned self] event in
+      self.pause();
+      return .success; 
+    }
+ 
+    var nowPlayingInfo = [String : Any] ();
+    nowPlayingInfo[MPMediaItemPropertyTitle] = title;
+    MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+  }
+
+   @objc func handleInterruption(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+            let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+            let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+                return
+        }
+        if type == .began {
+            // Interruption began, take appropriate actions (save state, update user interface)
+            sendEvent(withName: "media", body:  "paused");
+           
+        }
+        else if type == .ended {
+            guard let optionsValue =
+                userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else {
+                    return
+            }
+            let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+            if options.contains(.shouldResume) {
+                // Interruption Ended - playback should resume
+                sendEvent(withName: "media", body:  "play");
+               
+            } else {
+                // Interruption Ended - playback should NOT resume
+                sendEvent(withName: "media", body:  "stoped");
+            }
+        }
+    }
+
+
   @objc(setup)
   public func setup() {
-    var sessionCategory: AVAudioSession.Category = .playback
-    var sessionCategoryOptions: AVAudioSession.CategoryOptions = []
-    var sessionCategoryMode: AVAudioSession.Mode = .default
+
+    let notificationCenter = NotificationCenter.default
+        notificationCenter.removeObserver(self)
+        notificationCenter.addObserver(self,
+                                       selector: #selector(handleInterruption),
+                                       name: AVAudioSession.interruptionNotification,
+                                       object: nil)
+
+    let sessionCategory: AVAudioSession.Category = .playback
+    let sessionCategoryOptions: AVAudioSession.CategoryOptions = []
+    let sessionCategoryMode: AVAudioSession.Mode = .default
+
 
     // Progressively opt into AVAudioSession policies for background audio
     // and AirPlay 2.
@@ -34,9 +91,12 @@ class TrackPlayer: RCTEventEmitter {
         if let urlProp: String = track["path"] as? String {
             let fileURL = URL(string:urlProp)
             let soundData = try Data(contentsOf:fileURL!)
+            sendEvent(withName: "media", body:  "loading");
+            let title: String! = track["title"] as? String;
+            self.setupMediaPlayerNotificationView(title: title);
             player = try AVAudioPlayer(data: soundData)
             player.pause()
-            sendEvent(withName: "media", body:  "paused");
+            sendEvent(withName: "media", body:  "paused"); 
             resolve(NSNull())
         } else {
             throw TrackPlayerError.invalidTrack("Track Url is not valid");
@@ -45,7 +105,7 @@ class TrackPlayer: RCTEventEmitter {
         
     } catch {
         print("the error is : ", error)
-        reject("Failed", "Something went wrong", error)
+        reject("Failed", "Faied to load url", error)
     }
   }
   
