@@ -1,5 +1,7 @@
 # react-track-player 🎧
 
+[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](https://github.com/YajanaRao/Serenity/pulls)
+
 Cross Platform audio streaming Module for React native
 
 ## Features
@@ -43,8 +45,9 @@ pause = () => {
 ### Event handler
 
 ```javascript
-import { DeviceEventEmitter } from "react-native";
-subscription = DeviceEventEmitter.addListener("media", function (event) {
+import { addEventListener } from "react-track-player";
+
+subscription = addListener("media", function (event) {
   // handle event
   console.log("from event listener", event);
   if (event == "skip_to_next") {

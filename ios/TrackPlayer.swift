@@ -2,6 +2,8 @@ import AVFoundation
 import Foundation
 import MediaPlayer
 
+
+
 enum TrackPlayerError: Error {
     case invalidTrack(String)
 }
@@ -9,10 +11,12 @@ enum TrackPlayerError: Error {
 @objc(TrackPlayer)
 class TrackPlayer: RCTEventEmitter {
 
-  var player:AVAudioPlayer!
+   var player:AVAudioPlayer?
 
 
   func setupMediaPlayerNotificationView(title: String){
+    print("setupMediaPlayerNotificationView: ", title);
+    
     let commandCenter = MPRemoteCommandCenter.shared();
 
     // add handler for play command
@@ -28,21 +32,31 @@ class TrackPlayer: RCTEventEmitter {
  
     var nowPlayingInfo = [String : Any] ();
     nowPlayingInfo[MPMediaItemPropertyTitle] = title;
+    nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = 100
+    nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = 100
+    nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 1
+ 
+    // Set the metadata
+    print("now playing info: ", nowPlayingInfo);
+    
     MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
   }
 
-   @objc func handleInterruption(notification: Notification) {
+  @objc func handleInterruption(notification: Notification) {
         guard let userInfo = notification.userInfo,
             let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
             let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
                 return
         }
         if type == .began {
+            print("audio began");
+            
             // Interruption began, take appropriate actions (save state, update user interface)
             sendEvent(withName: "media", body:  "paused");
            
         }
         else if type == .ended {
+            print("audio ended")
             guard let optionsValue =
                 userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else {
                     return
@@ -62,7 +76,7 @@ class TrackPlayer: RCTEventEmitter {
 
   @objc(setup)
   public func setup() {
-
+    print("setup");
     let notificationCenter = NotificationCenter.default
         notificationCenter.removeObserver(self)
         notificationCenter.addObserver(self,
@@ -93,9 +107,9 @@ class TrackPlayer: RCTEventEmitter {
             let soundData = try Data(contentsOf:fileURL!)
             sendEvent(withName: "media", body:  "loading");
             let title: String! = track["title"] as? String;
-            self.setupMediaPlayerNotificationView(title: title);
+            setupMediaPlayerNotificationView(title: title);
             player = try AVAudioPlayer(data: soundData)
-            player.pause()
+            player?.pause()
             sendEvent(withName: "media", body:  "paused"); 
             resolve(NSNull())
         } else {
@@ -111,15 +125,17 @@ class TrackPlayer: RCTEventEmitter {
   
   @objc(pause)
   public func pause() {
-    player.pause()
+    print("paused");
+    player?.pause()
     sendEvent(withName: "media", body:  "paused");
   }
   
 
   @objc(play)
   public func play() {
+    print("play");
     try? AVAudioSession.sharedInstance().setActive(true)
-    player.play()
+    player?.play()
     sendEvent(withName: "media", body:  "playing");
   }
 
