@@ -103,23 +103,26 @@ class TrackPlayer: RCTEventEmitter {
     do {
         print("track: ", track)
         if let urlProp: String = track["path"] as? String {
+            sendEvent(withName: "media", body:  "loading");
             let fileURL = URL(string:urlProp)
             let soundData = try Data(contentsOf:fileURL!)
-            sendEvent(withName: "media", body:  "loading");
             let title: String! = track["title"] as? String;
             setupMediaPlayerNotificationView(title: title);
-            player = try AVAudioPlayer(data: soundData)
+            player = try AVAudioPlayer(data: soundData);
+            player?.prepareToPlay();
             player?.pause()
             sendEvent(withName: "media", body:  "paused"); 
             resolve(NSNull())
         } else {
             throw TrackPlayerError.invalidTrack("Track Url is not valid");
+            sendEvent(withName: "media", body:  "paused"); 
         }
 
         
     } catch {
         print("the error is : ", error)
-        reject("Failed", "Faied to load url", error)
+        reject("Error", "Faied to load url", error)
+        sendEvent(withName: "media", body:  "paused"); 
     }
   }
   

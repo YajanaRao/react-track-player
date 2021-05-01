@@ -4,6 +4,8 @@ import { NativeModules, StyleSheet, requireNativeComponent, StyleProp, ViewProps
 let SeekBar = null;
 if (Platform.OS === "android") {
   SeekBar = requireNativeComponent("SeekBar");
+} else if (Platform.OS === "ios") {
+  SeekBar = requireNativeComponent('RNTSeekBar');
 } else {
   SeekBar = ({ style, trackTintColor, thumbTintColor }) => (
     <React.Fragment>

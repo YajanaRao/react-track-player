@@ -1,6 +1,27 @@
 #import "TrackPlayerBridge.h"
 #import <React/RCTBridgeModule.h>
 
+// RNTMapManager.m
+#import <UIKit/UIKit.h>
+
+#import <React/RCTViewManager.h>
+
+@interface RNTSeekBarManager : RCTViewManager
+@end
+
+@implementation RNTSeekBarManager
+
+RCT_EXPORT_MODULE(RNTSeekBar)
+
+- (UIView *)view
+{
+  UISlider *seekBar = [[UISlider alloc] init];
+  seekBar.value = 0.9;
+  return seekBar;
+}
+
+@end
+
 @interface RCT_EXTERN_MODULE(TrackPlayer, NSObject)
 
 + (BOOL)requiresMainQueueSetup
