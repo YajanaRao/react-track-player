@@ -5,7 +5,7 @@ let SeekBar = null;
 if (Platform.OS === "android") {
   SeekBar = requireNativeComponent("SeekBar");
 } else if (Platform.OS === "ios") {
-  SeekBar = requireNativeComponent('RNTSeekBar');
+  SeekBar = requireNativeComponent("RNTSeekBar") 
 } else {
   SeekBar = ({ style, trackTintColor, thumbTintColor }) => (
     <React.Fragment>
@@ -14,18 +14,44 @@ if (Platform.OS === "android") {
     </React.Fragment>
   )
 }
+
+
 const { TrackPlayer } = NativeModules;
 
 
 const ProgressBar = ({ style, thumbTintColor = "black", trackTintColor = "white" }: { style: StyleProp<ViewProps>, thumbTintColor: string, trackTintColor: string }) => {
+  let timer = null;
+
+  const [value, setValue] = React.useState(0);
+  async function updateProgress(){
+  	const position =  await TrackPlayer.getPosition();
+    const progress = position / trackDuration * 100;
+    setValue(progress);
+  }
+
+  let trackDuration = 0;
+
   React.useEffect(() => {
     TrackPlayer.setup();
+    if (Platform.OS === "ios") {
+      TrackPlayer.getDuration().then(duration => {
+        trackDuration = duration;
+      })
+      timer = setInterval(() => {
+       	updateProgress(); 
+      }, 1000);
+    }
     return () => {
       TrackPlayer.terminate();
+      clearInterval(timer);
     }
   }, [])
   // @ts-ignore
-  return <SeekBar style={style || styles.bar} thumbTintColor={thumbTintColor} trackTintColor={trackTintColor} />;
+  if (Platform.OS === "ios"){
+    return <SeekBar value={value} maximumValue={100}  style={style || styles.bar} thumbTintColor={thumbTintColor} trackTintColor={trackTintColor} />;
+  } else {
+    return <SeekBar style={style || styles.bar} thumbTintColor={thumbTintColor} trackTintColor={trackTintColor} />;
+  }
 }
 
 

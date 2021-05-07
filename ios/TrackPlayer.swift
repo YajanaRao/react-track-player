@@ -3,7 +3,6 @@ import Foundation
 import MediaPlayer
 
 
-
 enum TrackPlayerError: Error {
     case invalidTrack(String)
 }
@@ -151,8 +150,18 @@ class TrackPlayer: RCTEventEmitter {
   public func terminate() {
       print("terminate player")
   }
-    
+  
+  @objc(getPosition:rejecter:)
+  public func getPosition(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+      print("player progress: ", player?.currentTime as Any)
+      resolve(player?.currentTime)
+  }
 
+   @objc(getDuration:rejecter:)
+   public func getDuration(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+       resolve(player?.duration)
+   }
+    
   override func supportedEvents() -> [String]! {
       return [
         "media"
