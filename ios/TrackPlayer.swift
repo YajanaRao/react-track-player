@@ -100,7 +100,10 @@ class TrackPlayer: RCTEventEmitter {
   @objc(load:resolver:rejecter:)
   public func load(track: [String: Any], resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
     do {
-        print("track: ", track)
+        print("track: ", track);
+        if((player?.isPlaying) != nil){
+            player?.stop();
+        }
         if let urlProp: String = track["path"] as? String {
             sendEvent(withName: "media", body:  "loading");
             let fileURL = URL(string:urlProp)
@@ -113,8 +116,8 @@ class TrackPlayer: RCTEventEmitter {
             sendEvent(withName: "media", body:  "paused"); 
             resolve(NSNull())
         } else {
+            sendEvent(withName: "media", body:  "paused");
             throw TrackPlayerError.invalidTrack("Track Url is not valid");
-            sendEvent(withName: "media", body:  "paused"); 
         }
 
         
