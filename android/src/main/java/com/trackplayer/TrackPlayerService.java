@@ -199,8 +199,6 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
                     initMediaSessionMetadata(uri);
                 }
             }).start();
-
-
         } catch (Exception e) {
             Log.e(TAG, "onPlayFromUri: " + e.toString());
             return;
@@ -268,8 +266,7 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
             super.onSeekTo(pos);
             Log.d(TAG, "onSeekTo " + pos);
             mMediaPlayer.seekTo((int) pos);
-            setMediaPlaybackState(PlaybackStateCompat.STATE_NONE);
-
+            // setMediaPlaybackState(PlaybackStateCompat.STATE_NONE);
         }
 
         @Override
@@ -411,7 +408,6 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
         mediaButtonIntent.setClass(this, MediaButtonReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, mediaButtonIntent, 0);
         mMediaSessionCompat.setMediaButtonReceiver(pendingIntent);
-
         setSessionToken(mMediaSessionCompat.getSessionToken());
     }
 

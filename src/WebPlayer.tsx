@@ -2,10 +2,10 @@ import { DeviceEventEmitter } from "react-native";
 
 const TrackPlayer = {
     player: new Audio(),
-    load(url: string) {
+    load(song: { title: string, cover: string, path: string }) {
         return new Promise((resolve, reject) => {
             try {
-                this.player = new Audio(url);
+                this.player = new Audio(song.path);
                 resolve(null);
             } catch (e) {
                 reject();
