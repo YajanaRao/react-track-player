@@ -26,9 +26,13 @@ Cross Platform audio streaming Module for React native
 import { TrackPlayer } from "react-track-player";
 
 load = () => {
-  TrackPlayer.load(
-    "https://dl.dropboxusercontent.com/s/8avcnxmjtdujytz/Sher%20Aaya%20Sher.mp3?dl=0"
-  ).then(() => {
+  TrackPlayer.load({
+    title: "Awesome song",
+    artist: "Mr. Awesome",
+    album: "Awesome songs only",
+    cover: "https://source.unsplash.com/random",
+    path: "https://dl.dropboxusercontent.com/s/8avcnxmjtdujytz/Sher%20Aaya%20Sher.mp3?dl=0",
+  }).then(() => {
     console.log("audio loaded");
   });
 };
@@ -51,16 +55,13 @@ subscription = addListener("media", function (event) {
   // handle event
   console.log("from event listener", event);
   if (event == "skip_to_next") {
-    dispatch(skipToNext());
+    skipToNext();
   } else if (event == "skip_to_previous") {
-    dispatch(skipToPrevious());
+    skipToPrevious();
   } else if (event == "completed") {
-    dispatch(skipToNext());
+    skipToNext();
   } else {
-    dispatch({
-      type: "STATUS",
-      status: event,
-    });
+    updateStatus();
   }
 });
 
