@@ -3,9 +3,22 @@ import { DeviceEventEmitter } from "react-native";
 const TrackPlayer = {
     player: new Audio(),
     load(song: { title: string, cover: string, path: string }) {
+        console.log("load")
         return new Promise((resolve, reject) => {
             try {
                 this.player = new Audio(song.path);
+                this.player.onplay = () => {
+                    console.log("playing");
+                    // DeviceEventEmitter.emit("media", "playing");
+                    const customEvent = new CustomEvent('media', { detail: "playing" });
+                    document.dispatchEvent(customEvent);
+                };
+                this.player.onpause = () => {
+                    console.log("paused");
+                    // DeviceEventEmitter.emit("media", "paused")
+                    const customEvent = new CustomEvent('media', { detail: "paused" });
+                    document.dispatchEvent(customEvent);
+                };
                 resolve(null);
             } catch (e) {
                 reject();
@@ -16,9 +29,6 @@ const TrackPlayer = {
     play() {
         try {
             this.player.play().catch((error: any) => console.log(error));
-            this.player.addEventListener('ended', () => {
-                DeviceEventEmitter.emit("skip_to_next")
-            });
         } catch (error) {
             console.log("Web Player", error);
         }
@@ -29,6 +39,9 @@ const TrackPlayer = {
         } catch (error) {
             console.log("Web Player", error);
         }
+    },
+    destroy() {
+        this.player = null;
     }
 }
 
