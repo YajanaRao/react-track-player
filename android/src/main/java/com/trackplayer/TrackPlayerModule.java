@@ -393,4 +393,28 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
         };
         waitForConnection(r);
     }
+
+    @ReactMethod
+    public void getDuration(Promise promise) {
+        try{
+            int duration = mSeekBar.getMax();
+            promise.resolve(duration);
+        }  catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "getDuration: " + e.toString());
+            promise.reject("getDuration" ,e);
+        }
+    }
+
+    @ReactMethod
+    public void getPosition(Promise promise) {
+        try{
+            int position = mSeekBar.getProgress();
+            promise.resolve(position);
+        }  catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "getPosition: " + e.toString());
+            promise.reject("getPosition", e);
+        }
+    }
 }
