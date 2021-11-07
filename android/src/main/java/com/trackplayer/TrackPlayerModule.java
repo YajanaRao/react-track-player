@@ -35,7 +35,6 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
     private ReactContext mContext;
     private TrackPlayerService mService;
     private PlaybackStateCompat mLastPlaybackState;
-    private MediaMetadataCompat metadata;
 
     public Handler handler;
 
@@ -178,7 +177,7 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
     private void scheduleSeekbarUpdate() {
         stopSeekbarUpdate();
         if (!mExecutorService.isShutdown() && playing) {
-            metadata = mMediaControllerCompat.getMetadata();
+            MediaMetadataCompat metadata = mMediaControllerCompat.getMetadata();
             updateDuration(metadata);
             Log.d(TAG,"seekbar update");
             handler = new Handler();
@@ -271,7 +270,7 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
                     Uri uri = Uri.parse(path);
                     stopSeekbarUpdate();
                     mMediaControllerCompat.getTransportControls().playFromUri(uri, null);
-                    metadata = mMediaControllerCompat.getMetadata();
+                    MediaMetadataCompat metadata = mMediaControllerCompat.getMetadata();
                     updateDuration(metadata);
                     callback.resolve(null);
                 }
@@ -286,8 +285,7 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
         Runnable r = new Runnable(){
             @Override
             public void run() {
-                    metadata = mMediaControllerCompat.getMetadata();
-                    scheduleSeekbarUpdate();
+                scheduleSeekbarUpdate();
             }
         };
         waitForConnection(r);
