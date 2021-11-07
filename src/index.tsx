@@ -1,5 +1,4 @@
 import { DeviceEventEmitter, NativeEventEmitter, NativeModules, Platform } from "react-native";
-import ProgressBar from './ProgressBar';
 
 
 const { TrackPlayer } = Platform.OS === "web" ? require("./WebPlayer") : NativeModules;
@@ -14,4 +13,4 @@ function addEventListener(event: string, listener: any) {
     return emitter.addListener(event, listener);
 }
 
-export { ProgressBar, TrackPlayer, addEventListener };
+export { TrackPlayer, addEventListener };

@@ -1,4 +1,3 @@
-import { DeviceEventEmitter } from "react-native";
 
 const TrackPlayer = {
     player: new Audio(),
