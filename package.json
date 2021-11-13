@@ -39,6 +39,7 @@
   ],
   "scripts": {
     "tsc": "tsc",
+    "log": "adb logcat *:S ReactTrackPlayer:V",
     "test": "echo \"no test specified\" ",
     "build": "tsc",
     "release": "release-it"

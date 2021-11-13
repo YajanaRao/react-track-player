@@ -40,7 +40,7 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
 
     private boolean connecting = false;
     private boolean playing = false;
-    private static final String TAG = "TrackPlayerModule";
+    private static final String TAG = "ReactTrackPlayer";
     private static int duration = 0;
     private static int position = 0;
     private static final long PROGRESS_UPDATE_INTERNAL = 1000;

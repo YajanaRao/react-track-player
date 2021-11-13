@@ -15,7 +15,7 @@ import static com.trackplayer.TrackPlayerService.CHANNEL_ID;
 
 public class MediaStyleHelper {
 
-    private static String TAG = "MediaStyleHelper";
+    private static String TAG = "ReactTrackPlayer";
     /**
      * Build a notification using the information from the given media session. Makes heavy use
      * of {@link MediaMetadataCompat#getDescription()} to extract the appropriate information.

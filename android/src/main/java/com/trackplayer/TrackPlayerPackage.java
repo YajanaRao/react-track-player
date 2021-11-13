@@ -10,10 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import android.util.Log;
 
 public class TrackPlayerPackage implements ReactPackage {
-    private static final String TAG = "TrackPlayer";
 
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
