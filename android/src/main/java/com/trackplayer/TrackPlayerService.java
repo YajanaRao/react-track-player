@@ -78,10 +78,15 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
     }
 
     public void play() {
-        mMediaPlayer.start();
-        setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
-        showPlayingNotification();
-        initialLoad = false;
+        try {
+            mMediaPlayer.start();
+            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+            showPlayingNotification();
+            initialLoad = false;
+        } catch (Exception e) {
+            // TODO: handle exception
+            Log.e(TAG, "play: " + e.toString());
+        }
     }
 
     private void playbackNow() {

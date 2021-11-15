@@ -68,24 +68,36 @@ subscription = addListener("media", function (event) {
 subscription.remove();
 ```
 
-### Components
+### API
 
-#### ProgressBar
+#### State
 
-A component base that updates itself every second with a new position.
+```js
+TrackPlayer.getState()
+```
 
-`import { ProgressBar } from 'react-track-player';`
+This method can be used to get the state of the player
 
-ProgressBar interacts with native audio module and updates the progress. All you need to do is render `<ProgressBar>` with your styles if you want.
+#### Get Position
 
-`thumbTintColor`
+```js
+TrackPlayer.getPosition();
+```
 
-Color of the foreground switch grip.
+Get track player progress position.
+#### Get Duration
 
-`trackTintColor`
+```js
+TrackPlayer.getDuration();
+```
 
-Assigns a minimum track image. Only static images are supported. The rightmost pixel of the image will be stretched to fill the track.
+Get track duration.
 
+### Hooks
+
+#### usePlaybackState
+
+#### useProgress
 ### Development
 
 Demo app is in `/example` directory

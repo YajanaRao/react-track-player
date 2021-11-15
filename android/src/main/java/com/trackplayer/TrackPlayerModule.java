@@ -365,4 +365,17 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
             promise.reject("getPosition", e);
         }
     }
+
+    @ReactMethod
+    public void getState(Promise promise) {
+        try {
+            String state = "paused";
+            if(playing){
+                state = "playing";
+            }
+            promise.resolve(state);
+        } catch (Exception e) {
+            promise.reject("getState", e);
+        }
+    }
 }
