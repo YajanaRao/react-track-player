@@ -378,4 +378,18 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
             promise.reject("getState", e);
         }
     }
+
+    @ReactMethod
+    public void seekTo(final int seconds){
+        Runnable r = new Runnable(){
+            @Override
+            public void run(){
+                // mMediaControllerCompat.getTransportControls().pause();
+                mMediaControllerCompat.getTransportControls().seekTo(seconds);
+                // position = seconds;
+                // mMediaControllerCompat.getTransportControls().play();
+            }
+        };
+        waitForConnection(r);
+    }
 }
