@@ -85,6 +85,28 @@ subscription.remove();
 ```
 
 ### API
+#### Load Audio into track player
+```js
+TrackPlayer.load({
+    title: "Awesome song",
+    artist: "Mr. Awesome",
+    album: "Awesome songs only",
+    cover: "https://source.unsplash.com/random",
+    path: "https://dl.dropboxusercontent.com/s/8avcnxmjtdujytz/Sher%20Aaya%20Sher.mp3?dl=0",
+})
+```
+Load a track into track player. Audio wont be played untill `play()` function is called.
+
+**Returns**: `Promise` - The promise resolves if it is sucess
+
+| Param |	Type	| Description |
+| ------ | --------- | --------- |
+| title | string |	Track title |
+| artist | string | Name of the artist |
+| album | string | Name of the album |
+| cover | string | Audio cover image path |
+| path | string | Audio url or path for native audio files |
+
 
 #### State
 
@@ -123,6 +145,8 @@ TrackPlayer.destroy()
 Destroys the player, cleaning up its resources. After executing this function, you won’t be able to use the player anymore, unless you call setup() again.
 Get track duration.
 
+**Returns**: `Promise`
+
 ### Hooks
 
 #### usePlaybackState
@@ -159,7 +183,3 @@ const MyComponent = () => {
   )
 }
 ```
-
-### Development
-
-Demo app is in `/example` directory
