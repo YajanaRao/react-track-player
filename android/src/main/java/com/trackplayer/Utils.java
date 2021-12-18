@@ -8,7 +8,7 @@ import android.util.Log;
 import java.util.HashMap;
 
 public class Utils {
-    private static String TAG = "Utils";
+    private static String TAG = "ReactTrackPlayer";
 
     public HashMap<String, Object> extractMetaData(String resource){
         HashMap<String,Object> metaData = new HashMap<String,Object>();

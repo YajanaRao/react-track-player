@@ -25,7 +25,6 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
 
-import android.widget.SeekBar;
 
 
 public class TrackPlayerModule extends ReactContextBaseJavaModule {
@@ -36,16 +35,14 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
     private ReactContext mContext;
     private TrackPlayerService mService;
     private PlaybackStateCompat mLastPlaybackState;
-    private SeekBar mSeekBar;
-    private SeekBarViewManager seekBarManager;
-    private MediaMetadataCompat metadata;
 
     public Handler handler;
 
     private boolean connecting = false;
-    private boolean seekBarVisible = false;
     private boolean playing = false;
-    private static final String TAG = "TrackPlayerModule";
+    private static final String TAG = "ReactTrackPlayer";
+    private static int duration = 0;
+    private static int position = 0;
     private static final long PROGRESS_UPDATE_INTERNAL = 1000;
     private static final long PROGRESS_UPDATE_INITIAL_INTERVAL = 100;
 
@@ -69,13 +66,6 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
 
     public TrackPlayerModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        Log.i(TAG, "seekBar not initialized");
-    }
-
-
-    public TrackPlayerModule(ReactApplicationContext reactContext, SeekBarViewManager seekBar) {
-        super(reactContext);
-        seekBarManager = seekBar;
     }
 
     @Override
@@ -172,15 +162,12 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
 
     private void updateDuration(MediaMetadataCompat metadata) {
         try{
-             if (metadata == null) {
+            if (metadata == null) {
                 Log.i(TAG, "updateDuration: metadata is null");
                 return;
             }
-            if(mSeekBar != null){
-                int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
-                Log.d(TAG, "updateDuration: "+duration);
-                mSeekBar.setMax(duration);
-            }
+            duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+            Log.d(TAG, "updateDuration: "+duration);
         }catch(Exception e){
             Log.e(TAG,"updateDuration: "+e.toString());
         }
@@ -189,8 +176,8 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
 
     private void scheduleSeekbarUpdate() {
         stopSeekbarUpdate();
-        if (!mExecutorService.isShutdown() && seekBarVisible && playing) {
-            metadata = mMediaControllerCompat.getMetadata();
+        if (!mExecutorService.isShutdown() && playing) {
+            MediaMetadataCompat metadata = mMediaControllerCompat.getMetadata();
             updateDuration(metadata);
             Log.d(TAG,"seekbar update");
             handler = new Handler();
@@ -214,7 +201,7 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
 
     private void updateProgress() {
         try{
-            if (mLastPlaybackState == null || mSeekBar == null) {
+            if (mLastPlaybackState == null) {
                 Log.d(TAG, "nothing to update returing");
                 stopSeekbarUpdate();
                 return;
@@ -240,14 +227,7 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
                     currentPosition += (int) timeDelta * playbackSpeed;
                 }
             } 
-            int position = (int) currentPosition;
-            if(mSeekBar != null){
-                Log.d(TAG, "updateProgress: "+position);
-                mSeekBar.setProgress(position); 
-            }else{
-                stopSeekbarUpdate();
-            }
-
+            position = (int) currentPosition;
         }catch(Exception e){
             Log.e(TAG, "updateProgress: " + e.toString());
         }
@@ -290,6 +270,8 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
                     Uri uri = Uri.parse(path);
                     stopSeekbarUpdate();
                     mMediaControllerCompat.getTransportControls().playFromUri(uri, null);
+                    MediaMetadataCompat metadata = mMediaControllerCompat.getMetadata();
+                    updateDuration(metadata);
                     callback.resolve(null);
                 }
 
@@ -303,38 +285,7 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
         Runnable r = new Runnable(){
             @Override
             public void run() {
-                mSeekBar = seekBarManager.getSeekBarInstance();
-                if(mSeekBar != null){
-                    metadata = mMediaControllerCompat.getMetadata();
-                    updateDuration(metadata);
-                    seekBarVisible = true;
-                    scheduleSeekbarUpdate();
-                    mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
-                        @Override
-                        public void onStartTrackingTouch(SeekBar seekBar) {
-                            Log.d(TAG, "onStartTrackingTouch");
-                            stopSeekbarUpdate();
-                        }
-
-                        @Override
-                        public void onProgressChanged(SeekBar seekBar, int i, boolean fromTouch) {
-                            if(fromTouch){
-                                Log.d(TAG, "onProgressChanged: "+i);
-                                // stopSeekbarUpdate();
-                                // mMediaControllerCompat.getTransportControls().seekTo(i);
-                                
-                            }
-                        }
-
-                        @Override
-                        public void onStopTrackingTouch(SeekBar seekBar) {
-                            Log.d(TAG, "onStopTrackingTouch");
-                            mMediaControllerCompat.getTransportControls().seekTo(seekBar.getProgress());
-                            scheduleSeekbarUpdate();
-                        }
-                    });
-                }
+                scheduleSeekbarUpdate();
             }
         };
         waitForConnection(r);
@@ -346,7 +297,6 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
         Runnable r = new Runnable(){
             @Override
             public void run(){
-                seekBarVisible = false;
                 stopSeekbarUpdate();
                 Log.d(TAG, "terminating seek bar schedular");
             }
@@ -389,6 +339,55 @@ public class TrackPlayerModule extends ReactContextBaseJavaModule {
                     stopSeekbarUpdate();
                     mExecutorService.shutdown();
                 }
+            }
+        };
+        waitForConnection(r);
+    }
+
+    @ReactMethod
+    public void getDuration(Promise promise) {
+        try{
+            promise.resolve(duration);
+        }  catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "getDuration: " + e.toString());
+            promise.reject("getDuration" ,e);
+        }
+    }
+
+    @ReactMethod
+    public void getPosition(Promise promise) {
+        try{
+            promise.resolve(position);
+        }  catch (Exception e) {
+            //TODO: handle exception
+            Log.e(TAG, "getPosition: " + e.toString());
+            promise.reject("getPosition", e);
+        }
+    }
+
+    @ReactMethod
+    public void getState(Promise promise) {
+        try {
+            String state = "paused";
+            if(playing){
+                state = "playing";
+            }
+            promise.resolve(state);
+        } catch (Exception e) {
+            promise.reject("getState", e);
+        }
+    }
+
+    @ReactMethod
+    public void seekTo(final int seconds){
+        Runnable r = new Runnable(){
+            @Override
+            public void run(){
+                // mMediaControllerCompat.getTransportControls().pause();
+                mMediaControllerCompat.getTransportControls().seekTo(seconds);
+                // position = seconds;
+                // mMediaControllerCompat.getTransportControls().play();
             }
         };
         waitForConnection(r);

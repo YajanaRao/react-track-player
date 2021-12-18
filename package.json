@@ -1,6 +1,6 @@
 {
   "name": "react-track-player",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "A fully fledged audio module created for music apps",
   "summary": "Cross platform music player",
   "author": "Yajana N Rao",
@@ -39,6 +39,7 @@
   ],
   "scripts": {
     "tsc": "tsc",
+    "log": "adb logcat *:S ReactTrackPlayer:V",
     "test": "echo \"no test specified\" ",
     "build": "tsc",
     "release": "release-it"

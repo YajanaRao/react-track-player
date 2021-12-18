@@ -1,24 +1,19 @@
 # react-track-player 🎧
 
+[![npm version](https://badge.fury.io/js/react-track-player.svg)](https://badge.fury.io/js/react-track-player)
+
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](https://github.com/YajanaRao/Serenity/pulls)
 
-Cross Platform audio streaming Module for React native
+Cross Platform audio streaming Module for React native. Provides audio playback, external media controls, background mode and more!
 
 ## Features
 
-- [x] Background play
-- [x] Notification
-- [x] Support for online streaming and offline files
+- [x] Lightweight - Complete audio library without managing queue, the code is optimized to use least resources
+- [x] Background play - Audio can be playing in the background and media can be controlled externally as well
+- [x] Local or network, files or streams - Support for online streaming and offline files
+- [x] Multi-platform - Supports Android, iOS and Web
+- [x] Supports React Hooks 🎣 - Includes React Hooks for common use-cases so you don’t have to write them
 
-## Install
-
-### Using npm
-
-`npm install react-track-player --save`
-
-### Using Yarn
-
-`yarn add react-track-player`
 
 ## Example
 
@@ -46,6 +41,34 @@ pause = () => {
 };
 ```
 
+## Install
+
+Install the module using yarn or npm
+### Using npm
+
+`npm install react-track-player --save`
+
+### Using Yarn
+
+`yarn add react-track-player`
+
+
+## Troubleshooting
+
+Issues while installing might be listed in [troubleshooting](docs/troubleshooting.md) page.
+
+## Getting started
+
+First of all, you need to set up the player. This usually takes less than a second:
+
+```javascript
+import TrackPlayer from 'react-track-player';
+
+await TrackPlayer.setup({})
+// The player is ready to be used
+```
+
+## Player Information
 ### Event handler
 
 ```javascript
@@ -68,24 +91,102 @@ subscription = addListener("media", function (event) {
 subscription.remove();
 ```
 
-### Components
+### API
+#### Load Audio into track player
+```js
+TrackPlayer.load({
+    title: "Awesome song",
+    artist: "Mr. Awesome",
+    album: "Awesome songs only",
+    cover: "https://source.unsplash.com/random",
+    path: "https://dl.dropboxusercontent.com/s/8avcnxmjtdujytz/Sher%20Aaya%20Sher.mp3?dl=0",
+})
+```
+Load a track into track player. Audio wont be played untill `play()` function is called.
 
-#### ProgressBar
+**Returns**: `Promise` - The promise resolves if it is sucess
 
-A component base that updates itself every second with a new position.
+| Param |	Type	| Description |
+| ------ | --------- | --------- |
+| title | string |	Track title |
+| artist | string | Name of the artist |
+| album | string | Name of the album |
+| cover | string | Audio cover image path |
+| path | string | Audio url or path for native audio files |
 
-`import { ProgressBar } from 'react-track-player';`
 
-ProgressBar interacts with native audio module and updates the progress. All you need to do is render `<ProgressBar>` with your styles if you want.
+#### State
 
-`thumbTintColor`
+```js
+TrackPlayer.getState()
+```
 
-Color of the foreground switch grip.
+This method can be used to get the state of the player
 
-`trackTintColor`
+**Returns**: Promise<String>
 
-Assigns a minimum track image. Only static images are supported. The rightmost pixel of the image will be stretched to fill the track.
+#### Get Position
 
-### Development
+```js
+TrackPlayer.getPosition();
+```
 
-Demo app is in `/example` directory
+Get track player progress position.
+
+**Returns**: Promise<number>
+#### Get Duration
+
+```js
+TrackPlayer.getDuration();
+```
+Gets the duration of the current track in seconds.
+
+**Returns**: Promise<number>
+
+#### Destroy
+
+```js
+TrackPlayer.destroy()
+```
+
+Destroys the player, cleaning up its resources. After executing this function, you won’t be able to use the player anymore, unless you call setup() again.
+Get track duration.
+
+**Returns**: `Promise`
+
+### Hooks
+
+#### usePlaybackState
+
+usePlaybackState gives the state of the player 
+
+#### useProgress
+
+useProgress accepts an interval to set the rate (in miliseconds) to poll the track player’s progress. The default value is 1000 or every second.
+
+```js
+import React from 'react';
+import { Text, View } from 'react-native';
+import { TrackPlayer, useProgress } from 'react-track-player';
+
+const MyComponent = () => {
+  const { position, duration } = useProgress()
+
+  return (
+    <View>
+    <Slider
+          style={{ width: '100%', height: 40 }}
+          minimumValue={0}
+          maximumValue={duration}
+          value={position}
+          onSlidingComplete={value => {
+            TrackPlayer.pause();
+            TrackPlayer.seekTo(value)
+            TrackPlayer.play();
+          }}
+        />
+      <Text>Track progress: {position} seconds out of {duration} total</Text>
+    </View>
+  )
+}
+```

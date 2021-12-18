@@ -43,7 +43,7 @@ import java.util.List;
 
 public class TrackPlayerService extends MediaBrowserServiceCompat implements AudioManager.OnAudioFocusChangeListener {
 
-    private static final String TAG = "TrackPlayerService";
+    private static final String TAG = "ReactTrackPlayer";
     private static final int NOTIFICATION_ID = 121;
     public static final String CHANNEL_ID = "com_yajananrao_mediaplayer";
     private static final String CHANNEL_NAME = "Track Player";
@@ -78,10 +78,15 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
     }
 
     public void play() {
-        mMediaPlayer.start();
-        setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
-        showPlayingNotification();
-        initialLoad = false;
+        try {
+            mMediaPlayer.start();
+            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+            showPlayingNotification();
+            initialLoad = false;
+        } catch (Exception e) {
+            // TODO: handle exception
+            Log.e(TAG, "play: " + e.toString());
+        }
     }
 
     private void playbackNow() {
@@ -366,7 +371,7 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous, "Previous", MediaButtonReceiver
                     .buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_pause, "Pause",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
+                    MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PAUSE)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_next, "Next",
                     MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
             builder.setChannelId(CHANNEL_ID);
@@ -385,7 +390,7 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous, "Previous", MediaButtonReceiver
                     .buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_play, "Play",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
+                    MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY)));
             builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_next, "Next",
                     MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
             builder.setChannelId(CHANNEL_ID);
@@ -485,9 +490,8 @@ public class TrackPlayerService extends MediaBrowserServiceCompat implements Aud
             }
             if (mMediaPlayer != null) {
                 position = mMediaPlayer.getCurrentPosition();
-                Log.d(TAG, "setMediaPlaybackState: position " + position);
-
             }
+            Log.d(TAG, "setMediaPlaybackState: position " + position + " state: "+ state);
             playbackstateBuilder.setState(state, position, 1.0f);
             mMediaSessionCompat.setPlaybackState(playbackstateBuilder.build());
         } catch (Exception e) {
