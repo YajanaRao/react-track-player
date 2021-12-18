@@ -28,7 +28,7 @@ export const usePlaybackState = () => {
       // Set initial state
       setPlayerState()
   
-      const sub: EmitterSubscription = addEventListener('media', (state: string) => {
+      const sub: any = addEventListener('media', (state: string) => {
         setState(state)
       })
   
