@@ -1,5 +1,7 @@
 # react-track-player 🎧
 
+[![npm version](https://badge.fury.io/js/react-track-player.svg)](https://badge.fury.io/js/react-track-player)
+
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](https://github.com/YajanaRao/Serenity/pulls)
 
 Cross Platform audio streaming Module for React native. Provides audio playback, external media controls, background mode and more!
