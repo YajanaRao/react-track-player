@@ -50,6 +50,11 @@ Install the module using yarn or npm
 
 `yarn add react-track-player`
 
+
+## Troubleshooting
+
+Issues while installing might be listed in [troubleshooting](docs/troubleshooting.md) page.
+
 ## Getting started
 
 First of all, you need to set up the player. This usually takes less than a second:
