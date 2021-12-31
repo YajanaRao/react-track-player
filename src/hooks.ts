@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {  EmitterSubscription, NativeModules, Platform } from "react-native";
+import { NativeModules, Platform } from "react-native";
 import { addEventListener } from './events';
 const { TrackPlayer } = Platform.OS === "web" ? require("./WebPlayer") : NativeModules;
 
@@ -60,7 +60,7 @@ export function useProgress(updateInterval?: number) {
         TrackPlayer.getPosition(),
         TrackPlayer.getDuration(),
       ])
-  
+
       // If the component has been unmounted, exit
       if (isUnmountedRef.current) return
   

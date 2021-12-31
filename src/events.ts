@@ -2,7 +2,7 @@ import { DeviceEventEmitter, NativeEventEmitter, NativeModules, Platform } from 
 
 const { TrackPlayer } = Platform.OS === "web" ? require("./WebPlayer") : NativeModules;
 
-const emitter = Platform.OS !== 'android' ? new NativeEventEmitter() : DeviceEventEmitter;
+const emitter = Platform.OS !== 'android' ? new NativeEventEmitter(TrackPlayer) : DeviceEventEmitter;
 
 function addEventListener(event: string, listener: any) {
     if (Platform.OS === "web") {
