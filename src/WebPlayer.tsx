@@ -1,6 +1,9 @@
 
 const TrackPlayer = {
     player: new Audio(),
+    setup(){
+        console.log("setup");
+    },
     load(song: { title: string, cover: string, path: string }) {
         console.log("load")
         return new Promise((resolve, reject) => {
@@ -41,6 +44,9 @@ const TrackPlayer = {
     },
     destroy() {
         this.player = null;
+    },
+    getState(){
+        return "status";
     }
 }
 
